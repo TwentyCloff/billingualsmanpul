@@ -177,7 +177,7 @@ const Header = () => {
               fontWeight: 700
             }}
           >
-            QARVO
+            XI-A
           </a>
 
           {/* Navigation */}
