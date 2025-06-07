@@ -1,6 +1,7 @@
 import Typewriter from "typewriter-effect";
+
 import { curve } from "../assets";
-import blackholeVideoHD from "../assets/hero/blackhole-hd.mp4"; // Pastikan Anda memiliki versi HD
+import blackholeVideo from "../assets/hero/blackhole.mp4";
 import Button from "./Button";
 import Section from "./Section";
 
@@ -22,7 +23,7 @@ const Hero = () => {
       {/* Overlay hitam transparan */}
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-20 z-[-9]" />
 
-      {/* Video blackhole - versi HD */}
+      {/* Video blackhole */}
       <video
         autoPlay
         muted
@@ -33,21 +34,12 @@ const Hero = () => {
         style={{
           filter: "brightness(0.75)",
         }}
-        poster={blackholeVideoHD} // Gunakan frame pertama HD sebagai poster
       >
-        <source src={blackholeVideoHD} type="video/mp4" />
-        <source src={blackholeVideo} type="video/mp4" /> {/* Fallback */}
+        <source src={blackholeVideo} type="video/webm" />
       </video>
 
       <style>
         {`
-          .blackhole-video {
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-          }
-          
           @media (max-width: 640px) {
             .blackhole-video {
               top: -50% !important;
