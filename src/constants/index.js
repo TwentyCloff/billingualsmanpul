@@ -49,22 +49,22 @@ export const navigation = [
   },
   {
     id: "1",
-    title: "Club",
-    url: "#features",
+    title: "About Us",
+    url: "#about",
   },
   {
     id: "2",
-    title: "Facility",
+    title: "Structure",
     url: "#how-to-use",
   },
   {
     id: "3",
-    title: "About Us",
+    title: "Galery",
     url: "#pricing",
   },
   {
     id: "4",
-    title: "Roadmap",
+    title: "Dashboard",
     url: "#roadmap",
   },
 ];
