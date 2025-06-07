@@ -45,9 +45,9 @@ const Hero = () => {
           }
           @media (max-width: 640px) {
             .blackhole-video {
-              width: 70vw !important;
-              height: 70vh !important;
-              top: -30% !important;
+              width: 80vw !important;
+              height: 80vh !important;
+              top: 0% !important;
               filter: brightness(0.9) !important;
             }
           }
