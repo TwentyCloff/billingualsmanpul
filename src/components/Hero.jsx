@@ -11,31 +11,38 @@ const Hero = () => {
       customPaddings
       className="pt-[12rem] -mt-[5.25rem] relative overflow-hidden"
     >
-      {/* Background gradient - balanced dark */}
+      {/* Unified background gradient */}
       <div
         className="absolute inset-0 z-[-20] pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, #131313 0%, #000000 100%)",
+          background: `
+            linear-gradient(
+              to bottom,
+              rgba(19,19,19,1) 0%,
+              rgba(10,10,10,1) 50%,
+              rgba(0,0,0,1) 100%
+            )`,
         }}
       />
 
-      {/* Soft black overlay */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-25 z-[-9]" />
-
-      {/* Blackhole video with optimized brightness */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
-                   top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
-        style={{
-          filter: "brightness(0.68) contrast(1.05)",
-        }}
-      >
-        <source src={blackholeVideo} type="video/webm" />
-      </video>
+      {/* Video container with gradient masking */}
+      <div className="absolute inset-0 z-[-10] overflow-hidden">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover
+                     top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
+          style={{
+            filter: "brightness(0.7) contrast(1.05)",
+            maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0.2) 90%)",
+            WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0.2) 90%)"
+          }}
+        >
+          <source src={blackholeVideo} type="video/webm" />
+        </video>
+      </div>
 
       <style>
         {`
@@ -134,19 +141,18 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Enhanced bottom transition gradient */}
+      {/* Seamless bottom transition gradient */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[10rem] z-[-5]"
+        className="absolute bottom-0 left-0 w-full h-[20rem] z-[-5] pointer-events-none"
         style={{
           background: `
             linear-gradient(
-              to bottom, 
-              transparent, 
-              rgba(0,0,0,0.1) 15%, 
-              rgba(0,0,0,0.3) 30%, 
-              rgba(0,0,0,0.5) 50%, 
-              rgba(0,0,0,0.7) 70%, 
-              #000 90%
+              to bottom,
+              transparent 0%,
+              rgba(0,0,0,0.3) 30%,
+              rgba(0,0,0,0.6) 60%,
+              rgba(0,0,0,0.9) 90%,
+              #000 100%
             )`,
         }}
       />
