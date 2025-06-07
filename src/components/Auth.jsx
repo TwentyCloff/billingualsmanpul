@@ -1,26 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { auth, db } from "../config/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
-import { FiUser, FiMail, FiLock, FiArrowRight } from "react-icons/fi";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../config/firebaseConfig";
+import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
 import blackholeVideo from "../assets/hero/animated2.webm";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setError("");
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,31 +18,21 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          email: email,
-          createdAt: new Date(),
-          name: "",
-          phone: "",
-          discord: "",
-          role: "user"
-        });
-      }
+      await signInWithEmailAndPassword(auth, email, password);
       navigate("/");
     } catch (err) {
       setError(
-        err.message.includes("auth/email-already-in-use")
-          ? "Email already in use"
-          : err.message.includes("auth/invalid-credential")
+        err.message.includes("auth/invalid-credential")
           ? "Invalid email or password"
           : "An error occurred. Please try again."
       );
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSignUpRedirect = () => {
+    navigate("/signup");
   };
 
   return (
@@ -68,33 +48,28 @@ const Auth = () => {
         <source src={blackholeVideo} type="video/webm" />
       </video>
       
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 z-1"></div>
+      {/* Semi-transparent overlay */}
+      <div className="absolute inset-0 bg-black/40 z-1"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter">
-            {isLogin ? "Welcome Back" : "Create Account"}
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter drop-shadow-lg">
+            Welcome Back
           </h1>
-          <p className="text-purple-200/80 font-light tracking-wider">
-            {isLogin
-              ? "Sign in to access your dashboard"
-              : "Join us to get started"}
+          <p className="text-white/80 font-light tracking-wider drop-shadow-md">
+            Sign in to access your dashboard
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white/10 backdrop-blur-lg p-8 rounded-xl border border-white/20 shadow-xl hover:shadow-purple-500/10 transition-all duration-500 hover:border-white/30 relative overflow-hidden"
+          className="bg-white/95 p-8 rounded-xl shadow-2xl hover:shadow-[0_8px_30px_rgba(255,255,255,0.12)] transition-all duration-500 relative"
         >
-          {/* Glass effect overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 backdrop-blur-[1px] -z-1"></div>
-          
-          {/* Glass border effect */}
-          <div className="absolute inset-0 rounded-xl border border-white/10 pointer-events-none"></div>
+          {/* White border effect */}
+          <div className="absolute inset-0 rounded-xl border border-white/80 pointer-events-none"></div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-200 text-sm flex items-center backdrop-blur-sm">
+            <div className="mb-4 p-3 bg-red-100 border border-red-200 rounded-lg text-red-800 text-sm flex items-center">
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -112,30 +87,30 @@ const Auth = () => {
             </div>
           )}
 
-          <div className="space-y-5 relative z-10">
+          <div className="space-y-5">
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-300 group-hover:text-purple-200 transition-colors">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-hover:text-gray-700 transition-colors">
                 <FiMail className="w-5 h-5" />
               </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-purple-200/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-transparent group-hover:border-white/30 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent group-hover:border-gray-300 transition-all duration-300 shadow-sm"
                 placeholder="Email address"
                 required
               />
             </div>
 
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-300 group-hover:text-purple-200 transition-colors">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-hover:text-gray-700 transition-colors">
                 <FiLock className="w-5 h-5" />
               </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-purple-200/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-transparent group-hover:border-white/30 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent group-hover:border-gray-300 transition-all duration-300 shadow-sm"
                 placeholder="Password"
                 required
                 minLength={6}
@@ -145,18 +120,16 @@ const Auth = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all duration-500 relative overflow-hidden group ${
+              className={`w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all duration-300 relative overflow-hidden group ${
                 isLoading
-                  ? "bg-purple-900/30 cursor-not-allowed"
-                  : "bg-gradient-to-r from-purple-600/70 to-indigo-600/70 hover:from-purple-500/70 hover:to-indigo-500/70"
-              } text-white shadow-lg border border-white/20 hover:border-white/30`}
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-white hover:bg-gray-50 text-gray-800"
+              } shadow-md hover:shadow-lg border border-gray-100`}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-              
               {isLoading ? (
                 <>
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-600"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -175,34 +148,30 @@ const Auth = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Processing...
-                </>
-              ) : isLogin ? (
-                <>
-                  Sign In <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  Signing In...
                 </>
               ) : (
                 <>
-                  Create Account <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  Sign In <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-purple-200/80">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
             <button
               type="button"
-              onClick={toggleMode}
-              className="text-purple-300 hover:text-white font-medium hover:underline underline-offset-4 decoration-purple-300/50 transition-all duration-300"
+              onClick={handleSignUpRedirect}
+              className="text-gray-700 hover:text-gray-900 font-medium hover:underline underline-offset-4 transition-all duration-300"
             >
-              {isLogin ? "Sign up" : "Sign in"}
+              Request access
             </button>
           </div>
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-xs text-purple-200/50">
+          <p className="text-xs text-white/70 drop-shadow-sm">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
