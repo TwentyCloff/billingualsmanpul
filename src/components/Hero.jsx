@@ -60,13 +60,18 @@ const Hero = () => {
           @media (max-width: 640px) {
             .blackhole-video {
               width: auto !important;
-              height: 60vh !important;
+              height: 55vh !important;
               top: 50% !important;
               left: 50% !important;
               transform: translate(-50%, -50%) !important;
             }
             .tech-font {
               font-size: 2.5rem;
+            }
+            .mobile-text {
+              font-size: 0.9rem !important;
+              line-height: 1.3 !important;
+              letter-spacing: 0.03em !important;
             }
           }
           @media (min-width: 1920px) {
@@ -109,9 +114,9 @@ const Hero = () => {
             </span>
           </h1>
 
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300 tech-font">
+          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300 tech-font mobile-text">
             EXPERIENCE MODERN EDUCATION AT{" "}
-            <span className="inline-block relative font-semibold text-white tech-font-bold">
+            <span className="inline-block relative font-semibold text-white tech-font-bold mobile-text">
               SMANPUL
               <img
                 src={curve}
