@@ -1,9 +1,9 @@
-import { FaFutbol, FaVolleyballBall, FaBasketballBall, FaCampground, FaMusic, FaFlag, FaBook, FaFistRaised, FaUserShield, FaGraduationCap, FaNewspaper, FaFlask, FaFirstAid, FaBoxingGloves, FaSwimmingPool } from 'react-icons/fa';
+import { FaFutbol, FaVolleyballBall, FaBasketballBall, FaCampground, FaMusic, FaFlag, FaBook, FaFistRaised, FaUserShield, FaGraduationCap, FaNewspaper, FaFlask, FaFirstAid, FaSwimmingPool } from 'react-icons/fa';
 import Section from "./Section";
 import Button from "./Button";
 import { LeftCurve, RightCurve } from "./design/Collaboration";
 
-// Define your clubs list
+// Define your clubs list with supported icons only
 const clubsList = [
   {
     id: '1',
@@ -91,9 +91,9 @@ const clubsList = [
   },
   {
     id: '15',
-    icon: 'tinju',
-    title: 'Boxing Club',
-    description: 'Train your strength and reflexes'
+    icon: 'anggar',
+    title: 'Fencing Club',
+    description: 'Train your precision and strategy'
   },
   {
     id: '16',
@@ -103,7 +103,7 @@ const clubsList = [
   }
 ];
 
-// Map icons to React Icons components
+// Map icons to React Icons components (only supported ones)
 const clubIcons = {
   futsal: FaFutbol,
   voli: FaVolleyballBall,
@@ -119,9 +119,8 @@ const clubIcons = {
   jurnalistik: FaNewspaper,
   music: FaMusic,
   pmr: FaFirstAid,
-  tinju: FaBoxingGloves,
-  anggar: FaSwimmingPool,
-  aflareen: FaGraduationCap
+  anggar: FaSwimmingPool, // Using swimming pool as alternative for fencing
+  aflateen: FaGraduationCap // Using graduation cap for English club
 };
 
 const Clubs = () => {
