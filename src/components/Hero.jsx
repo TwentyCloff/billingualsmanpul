@@ -11,18 +11,18 @@ const Hero = () => {
       customPaddings
       className="pt-[12rem] -mt-[5.25rem] relative overflow-hidden"
     >
-      {/* Background gradient gelap halus */}
+      {/* Background gradient gelap diperkuat */}
       <div
         className="absolute inset-0 z-[-20] pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, #121212 0%, #000000 90%)",
+          background: "linear-gradient(180deg, #0a0a0a 0%, #000000 100%)",
         }}
       />
 
-      {/* Overlay hitam transparan */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-20 z-[-9]" />
+      {/* Overlay hitam dipertebal opacitynya */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-40 z-[-9]" />
 
-      {/* Video blackhole */}
+      {/* Video blackhole - brightness dikurangi */}
       <video
         autoPlay
         muted
@@ -31,7 +31,7 @@ const Hero = () => {
         className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
                    top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
         style={{
-          filter: "brightness(0.75)",
+          filter: "brightness(0.6)", // Mengurangi brightness video
         }}
       >
         <source src={blackholeVideo} type="video/webm" />
@@ -134,11 +134,11 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Gradient transisi ke hitam pekat */}
+      {/* Gradient transisi ke hitam pekat dipertebal dan diperpanjang */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[12rem] z-[-5]"
+        className="absolute bottom-0 left-0 w-full h-[20rem] z-[-5]"
         style={{
-          background: "linear-gradient(to bottom, transparent, #000)",
+          background: "linear-gradient(to bottom, transparent 0%, #000 50%, #000 100%)",
         }}
       />
     </Section>
