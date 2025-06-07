@@ -35,7 +35,7 @@ const Hero = () => {
           className="absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover
                      top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
           style={{
-            filter: "brightness(0.7) contrast(1.05)",
+            filter: "brightness(0.8) contrast(1.05)",
             maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0.2) 90%)",
             WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0.2) 90%)"
           }}
