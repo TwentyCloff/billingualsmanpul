@@ -1,78 +1,76 @@
-import { FaRobot, FaChartLine, FaShieldAlt, FaSync, FaCogs, FaMagic, FaLightbulb, FaCode, FaDatabase, FaClock } from 'react-icons/fa';
+import { FaGlobe, FaUsers, FaMicrophone, FaGraduationCap, FaHandshake, FaComments, FaBook, FaTrophy } from 'react-icons/fa';
 import Section from "./Section";
 import Button from "./Button";
 import { LeftCurve, RightCurve } from "./design/Collaboration";
 
-// Define your features list
+// Define our club features
 const featuresList = [
   {
     id: '1',
-    icon: 'automation',
-    title: 'Smart Automation',
-    description: 'Automate repetitive tasks with intelligent workflows'
+    icon: 'global',
+    title: 'Global Connections',
+    description: 'Opportunity to speak directly with native English speakers from around the world'
   },
   {
     id: '2',
-    icon: 'analytics',
-    title: 'Advanced Analytics',
-    description: 'Get actionable insights from your data'
+    icon: 'community',
+    title: 'Supportive Community',
+    description: 'Join a welcoming environment of English learners and enthusiasts'
   },
   {
     id: '3',
-    icon: 'security',
-    title: 'Enterprise Security',
-    description: 'Military-grade encryption for all your data'
+    icon: 'speaking',
+    title: 'Speaking Practice',
+    description: 'Regular conversation sessions to build fluency and confidence'
   },
   {
     id: '4',
-    icon: 'integration',
-    title: 'Seamless Integration',
-    description: 'Connect with all your favorite tools'
+    icon: 'learning',
+    title: 'Structured Learning',
+    description: 'Curriculum designed to improve all language skills: reading, writing, listening, speaking'
   },
   {
     id: '5',
-    icon: 'customization',
-    title: 'Full Customization',
-    description: 'Tailor the experience to your needs'
+    icon: 'culture',
+    title: 'Cultural Exchange',
+    description: 'Learn about different cultures while practicing English'
   },
   {
     id: '6',
-    icon: 'ai',
-    title: 'AI Powered',
-    description: 'Leverage cutting-edge artificial intelligence'
+    icon: 'discussion',
+    title: 'Group Discussions',
+    description: 'Engage in meaningful conversations on various topics'
   },
   {
     id: '7',
-    icon: 'innovation',
-    title: 'Constant Innovation',
-    description: 'Regular updates with new features'
+    icon: 'resources',
+    title: 'Learning Resources',
+    description: 'Access to quality materials and guidance from experienced members'
   },
   {
     id: '8',
-    icon: 'development',
-    title: 'Developer Friendly',
-    description: 'Extensive API and documentation'
+    icon: 'achievement',
+    title: 'Skill Recognition',
+    description: 'Certificates and awards for active participation and improvement'
   }
 ];
 
 // Map icons to React Icons components
 const featureIcons = {
-  automation: FaRobot,
-  analytics: FaChartLine,
-  security: FaShieldAlt,
-  integration: FaSync,
-  customization: FaCogs,
-  ai: FaMagic,
-  innovation: FaLightbulb,
-  development: FaCode,
-  database: FaDatabase,
-  scheduling: FaClock
+  global: FaGlobe,
+  community: FaUsers,
+  speaking: FaMicrophone,
+  learning: FaGraduationCap,
+  culture: FaHandshake,
+  discussion: FaComments,
+  resources: FaBook,
+  achievement: FaTrophy
 };
 
 const Features = () => {
   return (
     <Section 
-      id="features"
+      id="about"
       crosses
       className="pt-[4rem] -mt-[2rem]"
     >
@@ -81,8 +79,8 @@ const Features = () => {
         <div className="lg:max-w-[30rem] text-center lg:text-left">
           <h2 className="h2 mb-6 md:mb-8 relative inline-block">
             <span className="relative z-10 text-white">
-              Powerful Features for{' '}
-              <span className="text-gradient font-bold">Your Workflow</span>
+              Our{' '}
+              <span className="text-gradient font-bold">Club</span>
             </span>
             <svg 
               className="absolute -bottom-2 left-0 w-full xl:-mt-2 pointer-events-none select-none"
@@ -102,7 +100,7 @@ const Features = () => {
           </h2>
 
           <p className="body-2 mb-8 text-n-2 lg:pr-8 text-gray-300">
-            Our script comes packed with cutting-edge features to automate and enhance your productivity.
+            Aflateen is a professional English learning organization/community that provides immersive language experiences through direct interaction with international speakers, engaging, fun learning programs, and cultural exchange opportunities.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
@@ -127,7 +125,7 @@ const Features = () => {
             })}
           </div>
 
-          <Button className="mx-auto lg:mx-0" white>Get Started</Button>
+          <Button className="mx-auto lg:mx-0" white>Join Our Club</Button>
         </div>
 
         {/* Right Content - Feature Visualization */}
@@ -135,7 +133,7 @@ const Features = () => {
           {/* Central Feature Icon with Animation */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative w-40 h-40 rounded-xl bg-n-8 border-2 border-primary/30 flex items-center justify-center p-6 backdrop-blur-sm">
-              <FaRobot className="z-10 text-6xl text-primary" />
+              <FaGlobe className="z-10 text-6xl text-primary" />
               <div className="absolute inset-0 rounded-xl bg-primary/10 blur-xl animate-pulse"></div>
             </div>
           </div>
