@@ -49,17 +49,17 @@ export const navigation = [
   },
   {
     id: "1",
-    title: "Features",
+    title: "Club",
     url: "#features",
   },
   {
     id: "2",
-    title: "How To Use",
+    title: "Facility",
     url: "#how-to-use",
   },
   {
     id: "3",
-    title: "Pricing",
+    title: "About Us",
     url: "#pricing",
   },
   {
