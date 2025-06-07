@@ -32,20 +32,16 @@ const Header = () => {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY <= 10) {
-        // At top of page - always show
         setVisible(true);
       } else if (currentScrollY > lastScrollY) {
-        // Scrolling down - hide
         setVisible(false);
       } else {
-        // Scrolling up - show
         setVisible(true);
       }
 
       setLastScrollY(currentScrollY);
     };
 
-    // Set a small timeout to avoid initial flicker
     const timer = setTimeout(() => {
       window.addEventListener('scroll', handleScroll, { passive: true });
     }, 100);
@@ -171,12 +167,17 @@ const Header = () => {
         style={{ height: "68px" }}
       >
         <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-3 h-full">
-          {/* Logo */}
+          {/* Logo with Rajdhani font */}
           <a
-            className="block w-auto xl:mr-8 text-2xl font-medium text-white"
+            className="block w-auto xl:mr-8 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 font-rajdhani tracking-tighter"
             href="#hero"
+            style={{
+              textShadow: '0 0 8px rgba(110, 231, 255, 0.6)',
+              letterSpacing: '-0.05em',
+              fontWeight: 700
+            }}
           >
-            XI-A
+            QARVO
           </a>
 
           {/* Navigation */}
