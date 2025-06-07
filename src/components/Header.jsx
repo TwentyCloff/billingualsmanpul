@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-
+import { FiUser, FiX, FiLogOut, FiMail } from "react-icons/fi";
 import { auth } from "../config/firebaseConfig";
 import MenuSvg from "../assets/svg/MenuSvg";
 import { navigation } from "../constants";
@@ -14,6 +14,7 @@ const Header = () => {
 
   const [openNavigation, setOpenNavigation] = useState(false);
   const [user, setUser] = useState(null);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -50,28 +51,35 @@ const Header = () => {
   const handleLogout = async () => {
     await signOut(auth);
     setUser(null);
+    setShowProfilePopup(false);
   };
 
-  const goToDashboard = () => {
-    navigate("/dashboard");
+  const toggleProfilePopup = () => {
+    setShowProfilePopup(!showProfilePopup);
   };
 
-  // Minimalist Button Component
-  const MinimalButton = ({ children, onClick, variant = "primary" }) => {
+  // Glass Button Component for Sign In/Sign Up
+  const GlassButton = ({ children, onClick, variant = "primary" }) => {
     const baseStyle = `
       relative overflow-hidden
-      px-4 py-1.5 rounded
+      px-5 py-2 rounded-lg
       text-sm font-medium
       transition-all duration-200
-      hover:bg-white/10
+      border border-white/20
+      backdrop-blur-sm
+      hover:shadow-lg
       active:scale-[0.98]
     `;
 
     const variants = {
-      primary: `text-white`,
-      secondary: `text-white/80 hover:text-white`,
-      dashboard: `text-indigo-100 hover:text-indigo-50`,
-      logout: `text-pink-100 hover:text-pink-50`
+      primary: `
+        bg-white/5 hover:bg-white/10
+        text-white
+      `,
+      secondary: `
+        bg-white/3 hover:bg-white/7
+        text-white/90 hover:text-white
+      `
     };
 
     return (
@@ -88,6 +96,39 @@ const Header = () => {
     <>
       {openNavigation && (
         <div className="fixed inset-0 bg-black/80 z-40 lg:hidden transition-opacity duration-300" />
+      )}
+
+      {/* Profile Popup */}
+      {showProfilePopup && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-[#0f0a1a] border border-white/10 rounded-xl p-6 max-w-xs w-full relative">
+            <button 
+              onClick={() => setShowProfilePopup(false)}
+              className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+            >
+              <FiX size={20} />
+            </button>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-purple-900/30 flex items-center justify-center mb-4">
+                <FiUser size={24} className="text-white" />
+              </div>
+              
+              <div className="flex items-center gap-2 text-white/80 mb-6">
+                <FiMail size={16} />
+                <span className="text-sm">{user?.email}</span>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="w-full py-2 rounded-lg bg-red-900/30 hover:bg-red-900/40 text-red-100 hover:text-white flex items-center justify-center gap-2 transition-colors"
+              >
+                <FiLogOut size={16} />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div
@@ -135,24 +176,22 @@ const Header = () => {
 
               {/* Mobile buttons */}
               <div className="flex flex-col lg:hidden items-center gap-3 mt-4">
-                {user && (
-                  <MinimalButton onClick={goToDashboard} variant="dashboard">
-                    Dashboard
-                  </MinimalButton>
-                )}
                 {!user ? (
                   <>
-                    <MinimalButton onClick={handleLogin} variant="primary">
+                    <GlassButton onClick={handleLogin} variant="primary">
                       Sign In
-                    </MinimalButton>
-                    <MinimalButton onClick={handleSignUp} variant="secondary">
+                    </GlassButton>
+                    <GlassButton onClick={handleSignUp} variant="secondary">
                       Sign Up
-                    </MinimalButton>
+                    </GlassButton>
                   </>
                 ) : (
-                  <MinimalButton onClick={handleLogout} variant="logout">
-                    Logout
-                  </MinimalButton>
+                  <button
+                    onClick={toggleProfilePopup}
+                    className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                  >
+                    <FiUser className="text-white" />
+                  </button>
                 )}
               </div>
             </div>
@@ -161,25 +200,23 @@ const Header = () => {
           </nav>
 
           {/* Desktop buttons */}
-          <div className="hidden lg:flex items-center gap-1 ml-auto">
-            {user && (
-              <MinimalButton onClick={goToDashboard} variant="dashboard">
-                Dashboard
-              </MinimalButton>
-            )}
+          <div className="hidden lg:flex items-center gap-3 ml-auto">
             {!user ? (
               <>
-                <MinimalButton onClick={handleLogin} variant="primary">
+                <GlassButton onClick={handleLogin} variant="primary">
                   Sign In
-                </MinimalButton>
-                <MinimalButton onClick={handleSignUp} variant="secondary">
+                </GlassButton>
+                <GlassButton onClick={handleSignUp} variant="secondary">
                   Sign Up
-                </MinimalButton>
+                </GlassButton>
               </>
             ) : (
-              <MinimalButton onClick={handleLogout} variant="logout">
-                Logout
-              </MinimalButton>
+              <button
+                onClick={toggleProfilePopup}
+                className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+              >
+                <FiUser className="text-white" />
+              </button>
             )}
           </div>
 
