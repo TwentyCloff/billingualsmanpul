@@ -1,7 +1,6 @@
 import { FaFutbol, FaVolleyballBall, FaBasketballBall, FaCampground, FaMusic, FaFlag, FaBook, FaFistRaised, FaUserShield, FaGraduationCap, FaNewspaper, FaFlask, FaFirstAid, FaSwimmingPool } from 'react-icons/fa';
 import Section from "./Section";
 import Button from "./Button";
-import { LeftCurve, RightCurve } from "./design/Collaboration";
 
 // Define your clubs list with supported icons only
 const clubsList = [
@@ -119,8 +118,8 @@ const clubIcons = {
   jurnalistik: FaNewspaper,
   music: FaMusic,
   pmr: FaFirstAid,
-  anggar: FaSwimmingPool, // Using swimming pool as alternative for fencing
-  aflateen: FaGraduationCap // Using graduation cap for English club
+  anggar: FaSwimmingPool,
+  aflateen: FaGraduationCap
 };
 
 const Clubs = () => {
@@ -130,10 +129,10 @@ const Clubs = () => {
       crosses
       className="pt-[4rem] -mt-[2rem]"
     >
-      <div className="container lg:flex flex-col lg:flex-row gap-12 items-center">
-        {/* Left Content - Text and Clubs */}
-        <div className="lg:max-w-[30rem] text-center lg:text-left">
-          <h2 className="h2 mb-6 md:mb-8 relative inline-block">
+      <div className="container mx-auto px-4">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h2 className="h2 mb-6 relative inline-block">
             <span className="relative z-10 text-white">
               Diverse Clubs for{' '}
               <span className="text-gradient font-bold">Your Passion</span>
@@ -155,77 +154,46 @@ const Clubs = () => {
             </svg>
           </h2>
 
-          <p className="body-2 mb-8 text-n-2 lg:pr-8 text-gray-300">
+          <p className="body-2 mb-8 text-n-2 mx-auto max-w-2xl text-gray-300">
             Discover your passion and develop new skills through our wide range of extracurricular activities. 
             Whether you're into sports, arts, or academics, there's a place for everyone!
           </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-            {clubsList.map((club) => {
-              const IconComponent = clubIcons[club.icon];
-              return (
-                <div 
-                  className="bg-n-7/80 p-4 rounded-xl border border-n-6 hover:bg-n-7 transition-colors backdrop-blur-sm"
-                  key={club.id}
-                >
-                  <div className="flex items-start">
-                    <IconComponent className="mt-1 flex-shrink-0 pointer-events-none select-none text-lg text-primary" />
-                    <div className="ml-3">
-                      <h6 className="body-2 font-medium text-white">{club.title}</h6>
-                      {club.description && (
-                        <p className="body-2 mt-1 text-n-2">{club.description}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <Button className="mx-auto lg:mx-0" white>Join Now</Button>
         </div>
 
-        {/* Right Content - Club Visualization */}
-        <div className="relative w-full max-w-[32rem] lg:w-[40rem] aspect-square mt-10 lg:mt-0">
-          {/* Central Club Icon with Animation */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-40 h-40 rounded-xl bg-n-8 border-2 border-primary/30 flex items-center justify-center p-6 backdrop-blur-sm">
-              <FaFutbol className="z-10 text-6xl text-primary" />
-              <div className="absolute inset-0 rounded-xl bg-primary/10 blur-xl animate-pulse"></div>
-            </div>
-          </div>
-
-          {/* Rotating Orbit with Club Highlights */}
-          <div className="absolute inset-0 animate-spin-slow">
-            {clubsList.slice(0, 6).map((club, i) => {
-              const angle = (i * 360) / 6;
-              const radius = 10; // rem units
-              const x = Math.sin((angle * Math.PI) / 180) * radius;
-              const y = Math.cos((angle * Math.PI) / 180) * radius;
-              const IconComponent = clubIcons[club.icon];
-              
-              return (
-                <div
-                  key={club.id}
-                  className="absolute w-16 h-16 -mt-8 -ml-8"
-                  style={{
-                    left: `calc(50% + ${x}rem)`,
-                    top: `calc(50% - ${y}rem)`,
-                  }}
-                >
-                  <div className="relative w-full h-full bg-n-7/80 border-2 border-n-6 rounded-xl flex items-center justify-center p-2 hover:scale-110 transition-transform duration-300 hover:shadow-lg hover:shadow-primary/20 backdrop-blur-sm">
-                    <IconComponent className="text-3xl text-primary" />
-                    <div className="absolute -z-10 inset-0 rounded-xl bg-primary/10 blur-md"></div>
+        {/* Clubs Grid - Responsive Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+          {clubsList.map((club) => {
+            const IconComponent = clubIcons[club.icon];
+            return (
+              <div 
+                className="group relative bg-n-7/80 p-6 rounded-2xl border border-n-6 hover:bg-n-7 transition-all duration-300 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/10 overflow-hidden"
+                key={club.id}
+              >
+                {/* Club Icon with Gradient Background */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mr-4">
+                      <IconComponent className="text-2xl text-primary" />
+                    </div>
+                    <h3 className="h5 text-white">{club.title}</h3>
                   </div>
+                  <p className="body-2 text-n-2">{club.description}</p>
                 </div>
-              );
-            })}
-          </div>
+                
+                {/* Hover effect border */}
+                <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-primary/20 pointer-events-none transition-all duration-300"></div>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* Decorative Elements */}
-          <div className="absolute inset-0 rounded-full border-2 border-n-6/50 opacity-30"></div>
-          <div className="absolute inset-4 rounded-full border-2 border-n-6/30 opacity-20"></div>
-          <div className="absolute inset-8 rounded-full border-2 border-n-6/10 opacity-10"></div>
+        {/* CTA Button */}
+        <div className="text-center">
+          <Button className="mx-auto" white>
+            Explore All Clubs
+          </Button>
         </div>
       </div>
     </Section>
