@@ -28,7 +28,7 @@ const Hero = () => {
         muted
         loop
         playsInline
-        className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
+        className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-contain z-[-10] pointer-events-none
                    top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
         style={{
           filter: "brightness(0.75)",
@@ -45,9 +45,10 @@ const Hero = () => {
           }
           @media (max-width: 640px) {
             .blackhole-video {
-              width: 80vw !important;
-              height: 80vh !important;
-              top: 0% !important;
+              width: 80% !important;
+              height: auto !important;
+              top: 50% !important;
+              transform: translate(-50%, -50%) !important;
               filter: brightness(0.9) !important;
             }
           }
