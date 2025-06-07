@@ -15,13 +15,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./components/Dashboard";
 import Auth from "./components/Auth";
 import Tutorial from "./components/Tutorial"; // pastikan huruf T besar dan file-nya ada
+import Clubs from "./components/Clubs";
 
 const Home = () => (
   <>
     <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden">
       <Header />
       <Hero />
-      <Features />
+      <Clubs />
       <Benefits />
       <Services />
       <Pricing />
