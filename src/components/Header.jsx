@@ -176,7 +176,7 @@ const Header = () => {
             className="block w-auto xl:mr-8 text-2xl font-medium text-white"
             href="#hero"
           >
-            Qarvo
+            XI BILINGUAL
           </a>
 
           {/* Navigation */}
