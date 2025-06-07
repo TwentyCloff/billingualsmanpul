@@ -56,44 +56,22 @@ const Header = () => {
     navigate("/dashboard");
   };
 
-  // Elegant Button Component
-  const ElegantButton = ({ children, onClick, variant = "primary" }) => {
+  // Minimalist Button Component
+  const MinimalButton = ({ children, onClick, variant = "primary" }) => {
     const baseStyle = `
       relative overflow-hidden
-      px-6 py-2.5 rounded-md
+      px-4 py-1.5 rounded
       text-sm font-medium
       transition-all duration-200
-      border
-      backdrop-blur-sm
-      hover:shadow-lg
+      hover:bg-white/10
       active:scale-[0.98]
     `;
 
     const variants = {
-      primary: `
-        bg-[#1a0d2b] hover:bg-[#231538]
-        text-purple-100 hover:text-white
-        border-purple-900/50 hover:border-purple-500/30
-        shadow-[inset_0_1px_0_0_rgba(148,102,255,0.2)]
-      `,
-      secondary: `
-        bg-[#0f0918] hover:bg-[#1a1126]
-        text-purple-200 hover:text-purple-50
-        border-purple-800/30 hover:border-purple-500/20
-        shadow-[inset_0_1px_0_0_rgba(148,102,255,0.1)]
-      `,
-      dashboard: `
-        bg-[#160e29] hover:bg-[#1f1638]
-        text-indigo-100 hover:text-indigo-50
-        border-indigo-900/50 hover:border-indigo-500/30
-        shadow-[inset_0_1px_0_0_rgba(99,102,241,0.2)]
-      `,
-      logout: `
-        bg-[#180a1a] hover:bg-[#231025]
-        text-pink-100 hover:text-pink-50
-        border-pink-900/50 hover:border-pink-500/30
-        shadow-[inset_0_1px_0_0_rgba(236,72,153,0.2)]
-      `
+      primary: `text-white`,
+      secondary: `text-white/80 hover:text-white`,
+      dashboard: `text-indigo-100 hover:text-indigo-50`,
+      logout: `text-pink-100 hover:text-pink-50`
     };
 
     return (
@@ -101,10 +79,7 @@ const Header = () => {
         onClick={onClick}
         className={`${baseStyle} ${variants[variant]}`}
       >
-        <span className="relative z-10 flex items-center justify-center gap-2">
-          {children}
-          <span className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-        </span>
+        {children}
       </button>
     );
   };
@@ -116,17 +91,17 @@ const Header = () => {
       )}
 
       <div
-        className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
           openNavigation
-            ? "bg-[#000000] backdrop-blur-md"
-            : "bg-[#000000]/2 backdrop-blur-md"
+            ? "bg-black/90 backdrop-blur-md"
+            : "bg-transparent backdrop-blur-none"
         }`}
         style={{ height: "68px" }}
       >
         <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-3 h-full">
           {/* Logo */}
           <a
-            className="block w-auto xl:mr-8 text-3xl font-bold bg-gradient-to-r from-purple-900 to-purple-600 text-transparent bg-clip-text"
+            className="block w-auto xl:mr-8 text-2xl font-medium text-white"
             href="#hero"
           >
             Qarvo
@@ -146,12 +121,12 @@ const Header = () => {
                   target={item.external ? "_blank" : "_self"}
                   rel={item.external ? "noreferrer noopener" : undefined}
                   onClick={handleClick}
-                  className={`block relative font-code text-2xl uppercase text-purple-100 transition-colors hover:text-white ${
+                  className={`block relative font-medium text-lg text-white/80 transition-colors hover:text-white ${
                     item.onlyMobile ? "lg:hidden" : ""
-                  } px-6 py-6 md:py-8 lg:mr-0.25 lg:text-xs lg:font-semibold ${
+                  } px-6 py-6 md:py-8 lg:mr-0.25 lg:text-sm ${
                     item.url === pathname.hash
                       ? "z-2 lg:text-white"
-                      : "lg:text-purple-100/70"
+                      : "lg:text-white/70"
                   } lg:leading-5 lg:hover:text-white xl:px-12`}
                 >
                   {item.title}
@@ -161,23 +136,23 @@ const Header = () => {
               {/* Mobile buttons */}
               <div className="flex flex-col lg:hidden items-center gap-3 mt-4">
                 {user && (
-                  <ElegantButton onClick={goToDashboard} variant="dashboard">
+                  <MinimalButton onClick={goToDashboard} variant="dashboard">
                     Dashboard
-                  </ElegantButton>
+                  </MinimalButton>
                 )}
                 {!user ? (
                   <>
-                    <ElegantButton onClick={handleLogin} variant="primary">
+                    <MinimalButton onClick={handleLogin} variant="primary">
                       Sign In
-                    </ElegantButton>
-                    <ElegantButton onClick={handleSignUp} variant="secondary">
+                    </MinimalButton>
+                    <MinimalButton onClick={handleSignUp} variant="secondary">
                       Sign Up
-                    </ElegantButton>
+                    </MinimalButton>
                   </>
                 ) : (
-                  <ElegantButton onClick={handleLogout} variant="logout">
+                  <MinimalButton onClick={handleLogout} variant="logout">
                     Logout
-                  </ElegantButton>
+                  </MinimalButton>
                 )}
               </div>
             </div>
@@ -186,32 +161,32 @@ const Header = () => {
           </nav>
 
           {/* Desktop buttons */}
-          <div className="hidden lg:flex items-center gap-3 ml-auto">
+          <div className="hidden lg:flex items-center gap-1 ml-auto">
             {user && (
-              <ElegantButton onClick={goToDashboard} variant="dashboard">
+              <MinimalButton onClick={goToDashboard} variant="dashboard">
                 Dashboard
-              </ElegantButton>
+              </MinimalButton>
             )}
             {!user ? (
               <>
-                <ElegantButton onClick={handleLogin} variant="primary">
+                <MinimalButton onClick={handleLogin} variant="primary">
                   Sign In
-                </ElegantButton>
-                <ElegantButton onClick={handleSignUp} variant="secondary">
+                </MinimalButton>
+                <MinimalButton onClick={handleSignUp} variant="secondary">
                   Sign Up
-                </ElegantButton>
+                </MinimalButton>
               </>
             ) : (
-              <ElegantButton onClick={handleLogout} variant="logout">
+              <MinimalButton onClick={handleLogout} variant="logout">
                 Logout
-              </ElegantButton>
+              </MinimalButton>
             )}
           </div>
 
           {/* Mobile menu button */}
           <button
             onClick={toggleNavigation}
-            className="ml-auto lg:hidden p-3 rounded-md hover:bg-purple-900/20 transition-colors"
+            className="ml-auto lg:hidden p-3 rounded-md hover:bg-white/10 transition-colors"
           >
             <MenuSvg openNavigation={openNavigation} />
           </button>
