@@ -39,24 +39,34 @@ const Hero = () => {
 
       <style>
         {`
-          @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
-          .futur-font {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            letter-spacing: 0.05em;
+          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
+          .tech-font {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
           }
-          .typewriter-font {
-            font-family: 'Rajdhani', sans-serif;
+          .tech-font-light {
+            font-family: 'Orbitron', sans-serif;
             font-weight: 500;
+            letter-spacing: 0.05em;
+          }
+          .tech-font-bold {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
           }
           @media (max-width: 640px) {
             .blackhole-video {
               width: auto !important;
-              height: 65vh !important;
+              height: 100vh !important;
               top: 50% !important;
               left: 50% !important;
               transform: translate(-50%, -50%) !important;
+            }
+            .tech-font {
+              font-size: 2.5rem;
             }
           }
           @media (min-width: 1920px) {
@@ -77,28 +87,31 @@ const Hero = () => {
       {/* Konten utama */}
       <div className="container relative z-10">
         <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
-          <h1 className="h2 mb-6 text-white futur-font">
-            BILINGUAL CLASS
+          <h1 className="h1 mb-6 text-white tech-font-bold">
+            XI A BILINGUAL CLASS
             <br />
-            <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block typewriter-font">
+            <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block tech-font-light">
               <Typewriter
                 options={{
                   strings: [
-                    "Bilingual Excellence",
-                    "Future Education",
-                    "Digital Learning",
-                    "Innovative Classroom"
+                    "BILINGUAL EXCELLENCE",
+                    "FUTURE EDUCATION",
+                    "DIGITAL LEARNING",
+                    "INNOVATIVE CLASSROOM"
                   ],
                   autoStart: true,
                   loop: true,
+                  cursor: "_",
+                  delay: 50,
+                  deleteSpeed: 30
                 }}
               />
             </span>
           </h1>
 
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300 futur-font">
-            Experience modern education at{" "}
-            <span className="inline-block relative font-semibold text-white">
+          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300 tech-font">
+            EXPERIENCE MODERN EDUCATION AT{" "}
+            <span className="inline-block relative font-semibold text-white tech-font-bold">
               SMANPUL
               <img
                 src={curve}
@@ -110,8 +123,8 @@ const Hero = () => {
             </span>
           </p>
 
-          <Button href="#pricing" white className="futur-font">
-            Explore Now
+          <Button href="#pricing" white className="tech-font-bold hover:bg-cyan-500/10 hover:border-cyan-400/50 transition-all">
+            EXPLORE NOW
           </Button>
         </div>
       </div>
