@@ -68,7 +68,7 @@ const Hero = () => {
       <div className="container relative z-10">
         <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
           <h1 className="h1 mb-6 text-white futur-font">
-            Welcome to SMANPUL
+            XI A BILINGUAL CLASS
             <br />
             <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block">
               <Typewriter
@@ -98,7 +98,6 @@ const Hero = () => {
                 alt="Curve"
               />
             </span>
-            .edu
           </p>
 
           <Button href="#pricing" white className="futur-font">
