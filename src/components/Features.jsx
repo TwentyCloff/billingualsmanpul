@@ -6,24 +6,24 @@ const Features = () => {
     <Section 
       id="about"
       crosses
-      className="relative overflow-hidden py-[6rem]"
+      className="relative overflow-hidden py-[6rem] bg-n-8"
     >
-      {/* Enhanced Gradient Layers (Top to Bottom) */}
+      {/* Enhanced Gradient Overlay (100% → 70% → 50% → 30% → 0%) */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Layer 1: 100% to 70% opacity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-n-8 via-n-8/70 to-transparent h-[40%]"></div>
+        {/* Base Layer - Pure Black (100% opacity) */}
+        <div className="absolute inset-0 bg-n-8"></div>
         
-        {/* Layer 2: 70% to 50% opacity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-n-8/70 via-n-8/50 to-transparent h-[60%] mt-[10%]"></div>
+        {/* Gradient Layer 1: 100% to 70% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/100 via-n-8/70 to-transparent h-[30%]"></div>
         
-        {/* Layer 3: 50% to 30% opacity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-n-8/50 via-n-8/30 to-transparent h-[80%] mt-[20%]"></div>
+        {/* Gradient Layer 2: 70% to 50% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/70 via-n-8/50 to-transparent h-[50%] mt-[15%]"></div>
         
-        {/* Layer 4: 30% to 0% opacity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-n-8/30 to-transparent h-full mt-[30%]"></div>
+        {/* Gradient Layer 3: 50% to 30% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/50 via-n-8/30 to-transparent h-[70%] mt-[25%]"></div>
         
-        {/* Original Background Preservation */}
-        <div className="absolute inset-0 opacity-[0.15] bg-[url('/assets/background.jpg')] bg-cover bg-center mix-blend-overlay"></div>
+        {/* Gradient Layer 4: 30% to 0% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/30 to-transparent h-full mt-[40%]"></div>
       </div>
 
       <div className="container relative z-10 mx-auto px-4">
@@ -57,7 +57,7 @@ const Features = () => {
           </h2>
 
           <div className="relative">
-            <div className="relative z-10 bg-n-8/30 backdrop-blur-lg border border-n-7/40 rounded-2xl p-8 md:p-10 mx-auto max-w-[48rem]">
+            <div className="relative z-10 bg-n-8/70 backdrop-blur-md border border-n-6/50 rounded-2xl p-8 md:p-10 mx-auto max-w-[48rem]">
               <p className="body-1 text-n-2 leading-relaxed md:leading-loose">
                 In our bilingual class, every day feels like a new adventure. It's not just about learning in two languages — it's about growing together as one big, happy family. Laughter echoes through the room as we tackle lessons with enthusiasm and curiosity. Whether we're working on group projects or just sharing stories during break time, there's always a warm sense of togetherness that makes everything more fun. The vibe is cheerful, energetic, and full of support, making our class a place where everyone feels seen, heard, and excited to learn. It's seriously the best kind of classroom you could ask for!
               </p>
