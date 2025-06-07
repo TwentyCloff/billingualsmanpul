@@ -11,18 +11,18 @@ const Hero = () => {
       customPaddings
       className="pt-[12rem] -mt-[5.25rem] relative overflow-hidden"
     >
-      {/* Background gradient gelap diperkuat */}
+      {/* Background gradient - subtle dark */}
       <div
         className="absolute inset-0 z-[-20] pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, #0a0a0a 0%, #000000 100%)",
+          background: "linear-gradient(180deg, #121212 0%, #000000 95%)",
         }}
       />
 
-      {/* Overlay hitam dipertebal opacitynya */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-40 z-[-9]" />
+      {/* Soft black overlay - adjusted to 30% opacity */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-30 z-[-9]" />
 
-      {/* Video blackhole - brightness dikurangi */}
+      {/* Blackhole video with adjusted brightness */}
       <video
         autoPlay
         muted
@@ -31,7 +31,7 @@ const Hero = () => {
         className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
                    top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
         style={{
-          filter: "brightness(0.6)", // Mengurangi brightness video
+          filter: "brightness(0.7)", // Slightly brighter than before
         }}
       >
         <source src={blackholeVideo} type="video/webm" />
@@ -89,7 +89,7 @@ const Hero = () => {
         `}
       </style>
 
-      {/* Konten utama */}
+      {/* Main content */}
       <div className="container relative z-10">
         <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
           <h1 className="h1 mb-6 text-white tech-font-bold">
@@ -134,11 +134,11 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Gradient transisi ke hitam pekat dipertebal dan diperpanjang */}
+      {/* Bottom transition gradient - smoother */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[20rem] z-[-5]"
+        className="absolute bottom-0 left-0 w-full h-[14rem] z-[-5]"
         style={{
-          background: "linear-gradient(to bottom, transparent 0%, #000 50%, #000 100%)",
+          background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.7) 60%, #000 90%)",
         }}
       />
     </Section>
