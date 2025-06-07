@@ -11,18 +11,18 @@ const Hero = () => {
       customPaddings
       className="pt-[12rem] -mt-[5.25rem] relative overflow-hidden"
     >
-      {/* Background gradient - subtle dark */}
+      {/* Background gradient - balanced dark */}
       <div
         className="absolute inset-0 z-[-20] pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, #121212 0%, #000000 95%)",
+          background: "linear-gradient(180deg, #131313 0%, #000000 100%)",
         }}
       />
 
-      {/* Soft black overlay - adjusted to 30% opacity */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-30 z-[-9]" />
+      {/* Soft black overlay */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-25 z-[-9]" />
 
-      {/* Blackhole video with adjusted brightness */}
+      {/* Blackhole video with optimized brightness */}
       <video
         autoPlay
         muted
@@ -31,7 +31,7 @@ const Hero = () => {
         className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
                    top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
         style={{
-          filter: "brightness(0.7)", // Slightly brighter than before
+          filter: "brightness(0.68) contrast(1.05)",
         }}
       >
         <source src={blackholeVideo} type="video/webm" />
@@ -134,11 +134,20 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Bottom transition gradient - smoother */}
+      {/* Enhanced bottom transition gradient */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[14rem] z-[-5]"
+        className="absolute bottom-0 left-0 w-full h-[16rem] z-[-5]"
         style={{
-          background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.7) 60%, #000 90%)",
+          background: `
+            linear-gradient(
+              to bottom, 
+              transparent, 
+              rgba(0,0,0,0.1) 15%, 
+              rgba(0,0,0,0.3) 30%, 
+              rgba(0,0,0,0.5) 50%, 
+              rgba(0,0,0,0.7) 70%, 
+              #000 90%
+            )`,
         }}
       />
     </Section>
