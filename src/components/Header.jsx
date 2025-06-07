@@ -16,12 +16,8 @@ const Header = () => {
   const [openNavigation, setOpenNavigation] = useState(false);
   const [user, setUser] = useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  const [scrollState, setScrollState] = useState({
-    opacity: 1,
-    blur: 0,
-    prevScrollPos: 0,
-    scrollingDown: false
-  });
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -33,25 +29,32 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollPos = window.pageYOffset;
-      const scrollingDown = currentScrollPos > scrollState.prevScrollPos && currentScrollPos > 10;
+      const currentScrollY = window.scrollY;
 
-      // Calculate opacity and blur based on scroll position
-      const scrollPercentage = Math.min(currentScrollPos / 200, 1);
-      const opacity = scrollingDown ? Math.max(0.3, 1 - scrollPercentage * 0.7) : 1;
-      const blur = scrollingDown ? Math.min(5, scrollPercentage * 8) : 0;
+      if (currentScrollY <= 10) {
+        // At top of page - always show
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide
+        setVisible(false);
+      } else {
+        // Scrolling up - show
+        setVisible(true);
+      }
 
-      setScrollState({
-        opacity,
-        blur,
-        prevScrollPos: currentScrollPos,
-        scrollingDown
-      });
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrollState.prevScrollPos]);
+    // Set a small timeout to avoid initial flicker
+    const timer = setTimeout(() => {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   const toggleNavigation = () => {
     if (openNavigation) {
@@ -163,16 +166,9 @@ const Header = () => {
       <div
         ref={headerRef}
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-          openNavigation
-            ? "bg-black/90 backdrop-blur-md"
-            : "bg-black/10 backdrop-blur-none"
-        }`}
-        style={{
-          height: "68px",
-          opacity: scrollState.opacity,
-          backdropFilter: `blur(${scrollState.blur}px)`,
-          backgroundColor: `rgba(0, 0, 0, ${scrollState.scrollingDown ? 0.7 : 0.1})`
-        }}
+          openNavigation ? "bg-black/90" : "bg-transparent"
+        } ${visible ? "translate-y-0" : "-translate-y-full"}`}
+        style={{ height: "68px" }}
       >
         <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-3 h-full">
           {/* Logo */}
