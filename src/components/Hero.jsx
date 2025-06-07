@@ -1,7 +1,7 @@
 import Typewriter from "typewriter-effect";
 
 import { curve } from "../assets";
-import blackholeVideo from "../assets/hero/blackhole.mp4";
+import blackholeVideo from "../assets/hero/animated.webm";
 import Button from "./Button";
 import Section from "./Section";
 
