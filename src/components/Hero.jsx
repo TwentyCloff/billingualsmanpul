@@ -46,7 +46,7 @@ const Hero = () => {
           @media (max-width: 640px) {
             .blackhole-video {
               width: auto !important;
-              height: 100vh !important;
+              height: 75vh !important;
               top: 50% !important;
               left: 50% !important;
               transform: translate(-50%, -50%) !important;
