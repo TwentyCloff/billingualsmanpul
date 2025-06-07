@@ -60,7 +60,7 @@ const Hero = () => {
           @media (max-width: 640px) {
             .blackhole-video {
               width: auto !important;
-              height: 100vh !important;
+              height: 60vh !important;
               top: 50% !important;
               left: 50% !important;
               transform: translate(-50%, -50%) !important;
@@ -88,7 +88,7 @@ const Hero = () => {
       <div className="container relative z-10">
         <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
           <h1 className="h1 mb-6 text-white tech-font-bold">
-            XI A BILINGUAL CLASS
+            BILINGUAL CLASS
             <br />
             <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block tech-font-light">
               <Typewriter
@@ -101,7 +101,7 @@ const Hero = () => {
                   ],
                   autoStart: true,
                   loop: true,
-                  cursor: "_",
+                  cursor: "|",
                   delay: 50,
                   deleteSpeed: 30
                 }}
