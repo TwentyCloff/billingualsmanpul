@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
@@ -7,6 +7,7 @@ import {
 import { auth, db } from "../config/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 import { FiUser, FiMail, FiLock, FiArrowRight } from "react-icons/fi";
+import blackholeVideo from "../assets/hero/animated2.webm";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -15,91 +16,6 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Particle effect for the background
-  useEffect(() => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
-    canvas.style.width = '100vw';
-    canvas.style.height = '100vh';
-    canvas.style.zIndex = '-1';
-    canvas.style.opacity = '0.3';
-    document.body.appendChild(canvas);
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const particles = [];
-    const particleCount = window.innerWidth < 768 ? 50 : 100;
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 3 + 1,
-        speedX: Math.random() * 1 - 0.5,
-        speedY: Math.random() * 1 - 0.5,
-        color: `rgba(${Math.floor(Math.random() * 100 + 155)}, 
-                ${Math.floor(Math.random() * 50)}, 
-                ${Math.floor(Math.random() * 100 + 155)}, 
-                ${Math.random() * 0.5 + 0.2})`
-      });
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw black hole gradient center
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const gradient = ctx.createRadialGradient(
-        centerX, centerY, 0, 
-        centerX, centerY, Math.max(canvas.width, canvas.height) / 2
-      );
-      gradient.addColorStop(0, 'rgba(40, 0, 80, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(20, 0, 40, 0.5)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Update and draw particles
-      particles.forEach(particle => {
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-        
-        // Reset particles that go off screen
-        if (particle.x < 0 || particle.x > canvas.width || 
-            particle.y < 0 || particle.y > canvas.height) {
-          particle.x = Math.random() * canvas.width;
-          particle.y = Math.random() * canvas.height;
-        }
-
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color;
-        ctx.fill();
-      });
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      document.body.removeChild(canvas);
-    };
-  }, []);
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -116,7 +32,6 @@ const Auth = () => {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // Save user data to Firestore
         await setDoc(doc(db, "users", userCredential.user.uid), {
           email: email,
           createdAt: new Date(),
@@ -126,7 +41,7 @@ const Auth = () => {
           role: "user"
         });
       }
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(
         err.message.includes("auth/email-already-in-use")
@@ -141,13 +56,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative">
+      {/* Video Background */}
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline 
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src={blackholeVideo} type="video/webm" />
+      </video>
+      
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60 z-1"></div>
+
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h1>
-          <p className="text-purple-300/80 font-light tracking-wider">
+          <p className="text-purple-200/80 font-light tracking-wider">
             {isLogin
               ? "Sign in to access your dashboard"
               : "Join us to get started"}
@@ -156,16 +85,16 @@ const Auth = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-gray-900/70 backdrop-blur-xl p-8 rounded-xl border border-purple-900/30 shadow-lg hover:shadow-purple-900/20 transition-all duration-500 hover:border-purple-900/50 relative overflow-hidden"
+          className="bg-white/10 backdrop-blur-lg p-8 rounded-xl border border-white/20 shadow-xl hover:shadow-purple-500/10 transition-all duration-500 hover:border-white/30 relative overflow-hidden"
         >
-          {/* Multiverse effect overlay */}
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-600 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-indigo-800 rounded-full filter blur-3xl opacity-20"></div>
-          </div>
+          {/* Glass effect overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 backdrop-blur-[1px] -z-1"></div>
+          
+          {/* Glass border effect */}
+          <div className="absolute inset-0 rounded-xl border border-white/10 pointer-events-none"></div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm flex items-center backdrop-blur-sm">
+            <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-200 text-sm flex items-center backdrop-blur-sm">
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -185,28 +114,28 @@ const Auth = () => {
 
           <div className="space-y-5 relative z-10">
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-400 group-hover:text-purple-300 transition-colors">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-300 group-hover:text-purple-200 transition-colors">
                 <FiMail className="w-5 h-5" />
               </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800/70 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600/50 focus:border-transparent group-hover:border-purple-900/50 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-purple-200/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-transparent group-hover:border-white/30 transition-all duration-300"
                 placeholder="Email address"
                 required
               />
             </div>
 
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-400 group-hover:text-purple-300 transition-colors">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-300 group-hover:text-purple-200 transition-colors">
                 <FiLock className="w-5 h-5" />
               </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800/70 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600/50 focus:border-transparent group-hover:border-purple-900/50 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-purple-200/50 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-transparent group-hover:border-white/30 transition-all duration-300"
                 placeholder="Password"
                 required
                 minLength={6}
@@ -218,12 +147,11 @@ const Auth = () => {
               disabled={isLoading}
               className={`w-full flex items-center justify-center py-3 px-4 rounded-lg font-medium transition-all duration-500 relative overflow-hidden group ${
                 isLoading
-                  ? "bg-purple-900/50 cursor-not-allowed"
-                  : "bg-gradient-to-r from-purple-900/80 to-indigo-900/80 hover:from-purple-800 hover:to-indigo-800"
-              } text-white shadow-lg border border-purple-900/50 hover:border-purple-700/50`}
+                  ? "bg-purple-900/30 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-600/70 to-indigo-600/70 hover:from-purple-500/70 hover:to-indigo-500/70"
+              } text-white shadow-lg border border-white/20 hover:border-white/30`}
             >
-              {/* Button hover effect */}
-              <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
               
               {isLoading ? (
                 <>
@@ -261,12 +189,12 @@ const Auth = () => {
             </button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-purple-300/80">
+          <div className="mt-6 text-center text-sm text-purple-200/80">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={toggleMode}
-              className="text-purple-400 hover:text-purple-300 font-medium hover:underline underline-offset-4 decoration-purple-500/50 transition-all duration-300"
+              className="text-purple-300 hover:text-white font-medium hover:underline underline-offset-4 decoration-purple-300/50 transition-all duration-300"
             >
               {isLogin ? "Sign up" : "Sign in"}
             </button>
@@ -274,7 +202,7 @@ const Auth = () => {
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-xs text-purple-900/80">
+          <p className="text-xs text-purple-200/50">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
