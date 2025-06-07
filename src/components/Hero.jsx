@@ -39,14 +39,21 @@ const Hero = () => {
 
       <style>
         {`
-          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
           .futur-font {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          }
+          .typewriter-font {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 500;
           }
           @media (max-width: 640px) {
             .blackhole-video {
               width: auto !important;
-              height: 75vh !important;
+              height: 65vh !important;
               top: 50% !important;
               left: 50% !important;
               transform: translate(-50%, -50%) !important;
@@ -70,10 +77,10 @@ const Hero = () => {
       {/* Konten utama */}
       <div className="container relative z-10">
         <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
-          <h1 className="h1 mb-6 text-white futur-font">
-            XI A BILINGUAL CLASS
+          <h1 className="h2 mb-6 text-white futur-font">
+            BILINGUAL CLASS
             <br />
-            <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block">
+            <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block typewriter-font">
               <Typewriter
                 options={{
                   strings: [
@@ -89,9 +96,9 @@ const Hero = () => {
             </span>
           </h1>
 
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300">
+          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300 futur-font">
             Experience modern education at{" "}
-            <span className="inline-block relative font-semibold text-white futur-font">
+            <span className="inline-block relative font-semibold text-white">
               SMANPUL
               <img
                 src={curve}
