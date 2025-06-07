@@ -11,20 +11,18 @@ const Hero = () => {
       customPaddings
       className="pt-[12rem] -mt-[5.25rem] relative overflow-hidden"
     >
-      {/* Modern gradient background */}
-      <div
-        className="absolute inset-0 z-[-20] pointer-events-none"
-        style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-        }}
-      />
+      {/* Ultra-minimal gradient */}
+      <div className="absolute inset-0 z-[-20] bg-black" />
 
-      {/* Geometric pattern overlay */}
+      {/* Abstract grid overlay */}
       <div 
-        className="absolute inset-0 z-[-18] opacity-10 pointer-events-none"
+        className="absolute inset-0 z-[-18] opacity-20"
         style={{
-          backgroundImage: 'radial-gradient(circle at 25% 25%, #ffffff 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
+          backgroundImage: `
+            linear-gradient(rgba(59, 130, 246, 0.3) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.3) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px'
         }}
       />
 
@@ -34,11 +32,9 @@ const Hero = () => {
         muted
         loop
         playsInline
-        className="blackhole-video absolute left-1/2 transform -translate-x-1/2 w-[130vw] h-[130vh] object-cover z-[-10] pointer-events-none
-                   top-[-30%] sm:top-[-30%] md:top-[-20%] lg:top-[-15%] xl:top-[-12%] 2xl:top-[-10%]"
+        className="absolute left-1/2 transform -translate-x-1/2 w-full h-[150vh] object-cover z-[-10] opacity-40"
         style={{
-          filter: "brightness(0.5) hue-rotate(180deg)",
-          mixBlendMode: "screen"
+          filter: "blur(1px) contrast(120%)"
         }}
       >
         <source src={blackholeVideo} type="video/webm" />
@@ -46,125 +42,48 @@ const Hero = () => {
 
       <style>
         {`
-          @font-face {
-            font-family: 'Orbitron';
-            src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
-          }
-          .futuristic-text {
-            font-family: 'Orbitron', sans-serif;
+          @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&display=swap');
+          .futur-text {
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-          }
-          @media (max-width: 640px) {
-            .blackhole-video {
-              top: -50% !important;
-              filter: brightness(0.6) hue-rotate(180deg) !important;
-            }
-          }
-          @media (min-width: 1920px) {
-            .blackhole-video {
-              top: -12% !important;
-              transform: translateX(-50%) scale(1.1);
-            }
-          }
-          @media (min-width: 2560px) {
-            .blackhole-video {
-              top: -10% !important;
-              transform: translateX(-50%) scale(1.25);
-            }
           }
           .typewriter-cursor {
-            color: #3b82f6 !important;
+            color: #00f0ff !important;
             font-weight: bold !important;
           }
         `}
       </style>
 
-      {/* Main content */}
+      {/* Main content - ultra minimal */}
       <div className="container relative z-10">
-        <div className="relative max-w-[62rem] mx-auto text-center mb-[4rem] md:mb-20 lg:mb-[6rem]">
-          <h1 className="h1 mb-6 text-white futuristic-text">
-            Welcome to <span className="text-blue-400">SMANPUL</span>
-            <br />
-            <span className="text-[1.4rem] sm:text-[1.75rem] md:text-[2rem] leading-snug block mt-4">
-              <Typewriter
-                options={{
-                  strings: [
-                    "Bilingual Excellence",
-                    "Future-Ready Education",
-                    "Global Perspective",
-                    "Innovative Learning",
-                    "Digital Classroom",
-                    "跨文化学习环境",
-                    "双语教学先锋"
-                  ],
-                  autoStart: true,
-                  loop: true,
-                  delay: 50,
-                  deleteSpeed: 30,
-                  cursorClassName: 'typewriter-cursor',
-                  wrapperClassName: 'typewriter-wrapper futuristic-text'
-                }}
-              />
-            </span>
+        <div className="relative max-w-[50rem] mx-auto text-center py-[8rem]">
+          <h1 className="text-5xl sm:text-6xl mb-8 text-white futur-text">
+            SMANPUL
           </h1>
-
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 text-gray-300">
-            Experience the future of education at{" "}
-            <span className="inline-block relative font-semibold text-blue-300 futuristic-text">
-              SMANPUL
-              <img
-                src={curve}
-                className="absolute top-full left-0 w-full xl:-mt-2 pointer-events-none select-none"
-                width={624}
-                height={28}
-                alt="Curve"
-                style={{ filter: 'hue-rotate(180deg)' }}
-              />
-            </span>
-            .edu - Where boundaries disappear
-          </p>
-
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button href="#admission" white className="futuristic-text">
-              Join Now
-            </Button>
-            <Button href="#programs" className="futuristic-text bg-transparent border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white">
-              Explore Programs
-            </Button>
+          
+          <div className="text-xl sm:text-2xl text-cyan-300 mb-12 h-8 futur-text">
+            <Typewriter
+              options={{
+                strings: ["Future Education", "Digital Learning", "Beyond Limits"],
+                autoStart: true,
+                loop: true,
+                delay: 80,
+                deleteSpeed: 40,
+                cursorClassName: 'typewriter-cursor'
+              }}
+            />
           </div>
+
+          <Button href="#join" white className="futur-text">
+            EXPLORE
+          </Button>
         </div>
       </div>
 
-      {/* Animated gradient transition */}
-      <div
-        className="absolute bottom-0 left-0 w-full h-[12rem] z-[-5]"
-        style={{
-          background: "linear-gradient(to bottom, transparent, #0f172a)",
-        }}
-      />
-
-      {/* Floating tech elements */}
-      <div className="absolute top-1/4 left-10 w-4 h-4 rounded-full bg-blue-400 opacity-70 animate-float"></div>
-      <div className="absolute top-1/3 right-20 w-6 h-6 rounded-full bg-cyan-300 opacity-50 animate-float animation-delay-2000"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-3 h-3 rounded-full bg-indigo-400 opacity-60 animate-float animation-delay-3000"></div>
-
-      <style jsx global>{`
-        @keyframes float {
-          0% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(10deg); }
-          100% { transform: translateY(0) rotate(0deg); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-      `}</style>
+      {/* Glowing elements */}
+      <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_15px_5px_rgba(0,240,255,0.5)]"></div>
+      <div className="absolute bottom-1/3 right-1/3 w-1 h-1 rounded-full bg-blue-400 shadow-[0_0_10px_2px_rgba(59,130,246,0.5)]"></div>
     </Section>
   );
 };
