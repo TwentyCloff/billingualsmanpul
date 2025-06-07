@@ -8,13 +8,22 @@ const Features = () => {
       crosses
       className="relative overflow-hidden py-[6rem]"
     >
-      {/* Multi-layer Gradient Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-n-8/20 to-n-8/40"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-n-8/15 to-n-8/30"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-n-8/10 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-n-8/5 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-n-8/5 to-transparent"></div>
+      {/* Enhanced Gradient Layers (Top to Bottom) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Layer 1: 100% to 70% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8 via-n-8/70 to-transparent h-[40%]"></div>
+        
+        {/* Layer 2: 70% to 50% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/70 via-n-8/50 to-transparent h-[60%] mt-[10%]"></div>
+        
+        {/* Layer 3: 50% to 30% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/50 via-n-8/30 to-transparent h-[80%] mt-[20%]"></div>
+        
+        {/* Layer 4: 30% to 0% opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-n-8/30 to-transparent h-full mt-[30%]"></div>
+        
+        {/* Original Background Preservation */}
+        <div className="absolute inset-0 opacity-[0.15] bg-[url('/assets/background.jpg')] bg-cover bg-center mix-blend-overlay"></div>
       </div>
 
       <div className="container relative z-10 mx-auto px-4">
@@ -48,25 +57,21 @@ const Features = () => {
           </h2>
 
           <div className="relative">
-            {/* Floating gradient elements for depth */}
-            <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-primary/10 blur-3xl"></div>
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 rounded-full bg-n-3/10 blur-3xl"></div>
-            
-            <div className="relative z-10 bg-n-8/20 backdrop-blur-md border border-n-7/30 rounded-2xl p-8 md:p-10 mx-auto max-w-[48rem]">
-              <p className="body-1 text-n-2 leading-relaxed md:leading-loose text-left">
+            <div className="relative z-10 bg-n-8/30 backdrop-blur-lg border border-n-7/40 rounded-2xl p-8 md:p-10 mx-auto max-w-[48rem]">
+              <p className="body-1 text-n-2 leading-relaxed md:leading-loose">
                 In our bilingual class, every day feels like a new adventure. It's not just about learning in two languages — it's about growing together as one big, happy family. Laughter echoes through the room as we tackle lessons with enthusiasm and curiosity. Whether we're working on group projects or just sharing stories during break time, there's always a warm sense of togetherness that makes everything more fun. The vibe is cheerful, energetic, and full of support, making our class a place where everyone feels seen, heard, and excited to learn. It's seriously the best kind of classroom you could ask for!
               </p>
             </div>
           </div>
 
-          <div className="mt-12 animate-float">
-            <p className="body-2 text-n-3 mb-6">Like what you see?</p>
+          <div className="mt-12">
+            <p className="body-2 text-n-3 mb-6">Want to experience this yourself?</p>
             <Button 
-              className="mx-auto transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
+              className="mx-auto transform transition-all duration-300 hover:scale-105"
               white
               glow
             >
-              Join the Fun
+              Join Us Today
             </Button>
           </div>
         </div>
