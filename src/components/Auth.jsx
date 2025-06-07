@@ -63,7 +63,7 @@ const Auth = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white/95 p-8 rounded-xl shadow-2xl hover:shadow-[0_8px_30px_rgba(255,255,255,0.12)] transition-all duration-500 relative"
+          className="bg-white/1 p-8 rounded-xl shadow-2xl hover:shadow-[0_8px_30px_rgba(255,255,255,0.12)] transition-all duration-500 relative"
         >
           {/* White border effect */}
           <div className="absolute inset-0 rounded-xl border border-white/80 pointer-events-none"></div>
