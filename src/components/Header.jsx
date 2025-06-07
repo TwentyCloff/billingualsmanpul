@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -11,10 +11,17 @@ import { HambugerMenu } from "../components/design/Header";
 const Header = () => {
   const pathname = useLocation();
   const navigate = useNavigate();
+  const headerRef = useRef(null);
 
   const [openNavigation, setOpenNavigation] = useState(false);
   const [user, setUser] = useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
+  const [scrollState, setScrollState] = useState({
+    opacity: 1,
+    blur: 0,
+    prevScrollPos: 0,
+    scrollingDown: false
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -23,6 +30,28 @@ const Header = () => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.pageYOffset;
+      const scrollingDown = currentScrollPos > scrollState.prevScrollPos && currentScrollPos > 10;
+
+      // Calculate opacity and blur based on scroll position
+      const scrollPercentage = Math.min(currentScrollPos / 200, 1);
+      const opacity = scrollingDown ? Math.max(0.3, 1 - scrollPercentage * 0.7) : 1;
+      const blur = scrollingDown ? Math.min(5, scrollPercentage * 8) : 0;
+
+      setScrollState({
+        opacity,
+        blur,
+        prevScrollPos: currentScrollPos,
+        scrollingDown
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrollState.prevScrollPos]);
 
   const toggleNavigation = () => {
     if (openNavigation) {
@@ -132,12 +161,18 @@ const Header = () => {
       )}
 
       <div
+        ref={headerRef}
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
           openNavigation
             ? "bg-black/90 backdrop-blur-md"
-            : "bg-transparent backdrop-blur-none"
+            : "bg-black/10 backdrop-blur-none"
         }`}
-        style={{ height: "68px" }}
+        style={{
+          height: "68px",
+          opacity: scrollState.opacity,
+          backdropFilter: `blur(${scrollState.blur}px)`,
+          backgroundColor: `rgba(0, 0, 0, ${scrollState.scrollingDown ? 0.7 : 0.1})`
+        }}
       >
         <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-3 h-full">
           {/* Logo */}
