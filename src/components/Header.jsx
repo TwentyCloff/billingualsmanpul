@@ -69,7 +69,7 @@ const Header = () => {
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    navigate("/signin");
   };
 
   const handleSignUp = () => {
