@@ -136,7 +136,7 @@ const Hero = () => {
 
       {/* Enhanced bottom transition gradient */}
       <div
-        className="absolute bottom-0 left-0 w-full h-[16rem] z-[-5]"
+        className="absolute bottom-0 left-0 w-full h-[10rem] z-[-5]"
         style={{
           background: `
             linear-gradient(
