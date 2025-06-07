@@ -16,6 +16,7 @@ import Dashboard from "./components/Dashboard";
 import Auth from "./components/Auth";
 import Tutorial from "./components/Tutorial"; // pastikan huruf T besar dan file-nya ada
 import Clubs from "./components/Clubs";
+import SignUp from "./components/SignUp";
 
 const Home = () => (
   <>
@@ -41,6 +42,7 @@ const App = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/login" element={<Auth />} />
       <Route path="/tutorial" element={<Tutorial />} />
+      <Route path="/signup" element={<SignUp />} />
 
       {/* Login admin */}
       <Route path="/admin/login" element={<LoginAdmin />} />
