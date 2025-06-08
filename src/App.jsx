@@ -17,6 +17,8 @@ import Auth from "./components/Auth";
 import Tutorial from "./components/Tutorial";
 import Clubs from "./components/Clubs";
 import SignUp from "./components/SignUp";
+import ClassInformation from "./components/ClassInformation";
+
 
 const Home = () => (
   <>
