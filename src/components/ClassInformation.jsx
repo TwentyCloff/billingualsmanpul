@@ -9,7 +9,7 @@ const colors = {
   light: '#E8D5C5',      // Brushed cream
   accent: '#D4A373',     // Warm gold accent
   text: '#F8F3ED',       // Soft ivory text
-  background: '#121212'  // Deep dark background
+  background: '#000000'  // Deep dark background
 };
 
 // Glassmorphism Effect
