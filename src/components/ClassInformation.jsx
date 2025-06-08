@@ -2,22 +2,31 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Section from "./Section";
 
-// Midnight Plum Color Theme
+// Sophisticated Plum Color Theme
 const colors = {
   dark: '#1E1E2F',       // Deep plum
   medium: '#4C2A59',     // Royal purple
   light: '#9E4B8A',      // Vibrant plum
-  accent: '#D67AB1',     // Pinkish accent
+  accent: '#D67AB1',     // Subtle pink accent
   text: '#FFFFFF',       // Pure white
-  background: '#000000'  // Pure black
+  background: '#121212', // Dark background
+  highlight: '#C792DF',  // Soft highlight
+  subtleGlow: 'rgba(214, 122, 177, 0.15)' // Subtle glow effect
 };
 
-// Glassmorphism Effect
+// Refined Glassmorphism Effect
 const glassStyle = {
-  background: 'rgba(30, 30, 47, 0.25)',
+  background: 'rgba(30, 30, 47, 0.2)',
   backdropFilter: 'blur(16px)',
-  border: '1px solid rgba(158, 75, 138, 0.2)',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+  border: '1px solid rgba(158, 75, 138, 0.15)',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+  borderRadius: '16px'
+};
+
+// Modern card style
+const cardStyle = {
+  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.8) 0%, rgba(76, 42, 89, 0.8) 100%)`,
+  ...glassStyle
 };
 
 // Main Class Structure
@@ -72,7 +81,7 @@ class Teacher {
   }
 }
 
-// React Component with Midnight Plum UI
+// React Component with Professional UI
 class ClassInformation extends React.Component {
   constructor(props) {
     super(props);
@@ -112,40 +121,47 @@ class ClassInformation extends React.Component {
   }
 
   renderStudentCard(student, index) {
+    const isTreasurer = student.position && student.position.includes('Bendahara');
+    
     return (
       <motion.div
         key={index}
         className="rounded-xl p-4 mb-4 transition-all duration-300"
         style={{
-          background: `linear-gradient(135deg, ${colors.dark} 0%, ${colors.medium} 100%)`,
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)'
+          background: isTreasurer 
+            ? `linear-gradient(135deg, ${colors.medium} 0%, ${colors.dark} 100%)`
+            : `linear-gradient(135deg, ${colors.dark} 0%, ${colors.medium} 100%)`,
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+          border: isTreasurer ? `1px solid ${colors.accent}` : '1px solid transparent'
         }}
         whileHover={{ 
           y: -5,
-          boxShadow: `0 12px 32px ${colors.light}40`,
-          background: `linear-gradient(135deg, ${colors.medium} 0%, ${colors.dark} 100%)`
+          boxShadow: `0 8px 24px ${colors.subtleGlow}`,
+          scale: isTreasurer ? 1.02 : 1.01
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="flex justify-between items-center">
           <h3 className="font-medium text-lg" style={{ 
             color: colors.text,
-            fontFamily: '"Conthrax", sans-serif',
-            fontWeight: 600
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 500
           }}>{student.name}</h3>
           {student.position && (
-            <span 
+            <motion.span 
               className="text-xs font-medium px-3 py-1 rounded-full"
               style={{
-                background: `linear-gradient(90deg, ${colors.accent} 0%, ${colors.light} 100%)`,
+                background: isTreasurer 
+                  ? `linear-gradient(90deg, ${colors.accent} 0%, ${colors.light} 100%)`
+                  : `linear-gradient(90deg, ${colors.light} 0%, ${colors.accent} 100%)`,
                 color: colors.dark,
-                boxShadow: `0 2px 12px ${colors.accent}80`,
-                fontFamily: '"Conthrax", sans-serif',
-                fontWeight: 700
+                fontFamily: '"Inter", sans-serif',
+                fontWeight: 600
               }}
+              whileHover={{ scale: 1.05 }}
             >
               {student.position}
-            </span>
+            </motion.span>
           )}
         </div>
       </motion.div>
@@ -156,23 +172,20 @@ class ClassInformation extends React.Component {
     return (
       <motion.div
         className="rounded-2xl p-6 h-full transition-all duration-300"
-        style={{
-          background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
-          ...glassStyle
-        }}
+        style={cardStyle}
         whileHover={{ 
           scale: 1.02,
-          boxShadow: `0 12px 40px ${colors.light}40`
+          boxShadow: `0 12px 28px ${colors.subtleGlow}`
         }}
+        transition={{ duration: 0.3 }}
       >
         <h3 
           className="font-semibold mb-4 text-lg uppercase tracking-wider"
           style={{ 
             color: colors.accent,
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            fontFamily: '"Conthrax", sans-serif',
-            fontWeight: 700,
-            letterSpacing: '1.5px'
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 600,
+            letterSpacing: '1px'
           }}
         >
           {title}
@@ -182,9 +195,49 @@ class ClassInformation extends React.Component {
     );
   }
 
+  renderTreasurerSection() {
+    const treasurers = this.classData.getTreasurers();
+    
+    return (
+      <motion.div 
+        className="rounded-2xl p-6 h-full"
+        style={cardStyle}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.4 }}
+        viewport={{ once: true, margin: "-50px" }}
+      >
+        <h3 
+          className="font-semibold mb-6 text-lg uppercase tracking-wider"
+          style={{ 
+            color: colors.accent,
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 600,
+            letterSpacing: '1px'
+          }}
+        >
+          BENDAHARA
+        </h3>
+        <div className="space-y-4">
+          {treasurers.map((treasurer, index) => (
+            <motion.div 
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
+              viewport={{ once: true }}
+            >
+              {this.renderStudentCard(treasurer, index)}
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
+
   render() {
     const classPresident = this.classData.getClassPresident();
-    const treasurers = this.classData.getTreasurers();
     const secretary = this.classData.getSecretary();
     const regularStudents = this.classData.getRegularStudents();
 
@@ -205,13 +258,11 @@ class ClassInformation extends React.Component {
             {/* Header */}
             <div className="text-center mb-20">
               <motion.h1 
-                className="text-5xl font-bold mb-6 tracking-tight"
+                className="text-4xl md:text-5xl font-bold mb-6"
                 style={{ 
                   color: colors.text,
-                  textShadow: `0 0 15px ${colors.accent}80`,
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 800,
-                  letterSpacing: '-0.5px'
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 700
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -220,10 +271,9 @@ class ClassInformation extends React.Component {
                 CLASS STRUCTURE
               </motion.h1>
               <motion.div 
-                className="w-32 h-1 mx-auto"
+                className="w-24 h-1 mx-auto"
                 style={{ 
                   background: `linear-gradient(90deg, ${colors.accent}, ${colors.light})`,
-                  boxShadow: `0 0 10px ${colors.accent}`
                 }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -240,31 +290,27 @@ class ClassInformation extends React.Component {
               viewport={{ once: true }}
             >
               <h2 
-                className="text-xl font-semibold mb-8 uppercase tracking-wider"
+                className="text-lg font-semibold mb-8 uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px',
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 600
                 }}
               >
                 WALI KELAS
               </h2>
               <motion.div
-                className="inline-block rounded-2xl px-10 py-8 mx-auto"
-                style={{
-                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
-                  ...glassStyle
-                }}
-                whileHover={{ scale: 1.03 }}
+                className="inline-block rounded-2xl px-8 py-6 mx-auto"
+                style={cardStyle}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
               >
                 <p 
-                  className="text-2xl font-medium tracking-wide"
+                  className="text-xl md:text-2xl font-medium"
                   style={{ 
                     color: colors.text,
-                    textShadow: `0 0 10px ${colors.accent}80`,
-                    fontFamily: '"Conthrax", sans-serif',
-                    fontWeight: 600
+                    fontFamily: '"Inter", sans-serif',
+                    fontWeight: 500
                   }}
                 >
                   {this.classData.teacher.getFormattedName()}
@@ -281,18 +327,17 @@ class ClassInformation extends React.Component {
               viewport={{ once: true }}
             >
               <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
+                className="text-lg font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px',
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 600
                 }}
               >
                 CLASS OFFICERS
               </h2>
               
-              <div className="grid md:grid-cols-3 gap-10">
+              <div className="grid md:grid-cols-3 gap-8">
                 {/* Class President */}
                 {this.renderOfficerCard("KETUA KELAS", classPresident)}
                 
@@ -300,32 +345,7 @@ class ClassInformation extends React.Component {
                 {this.renderOfficerCard("SEKRETARIS", secretary)}
                 
                 {/* Treasurers */}
-                <motion.div 
-                  className="rounded-2xl p-6 h-full"
-                  style={{
-                    background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
-                    ...glassStyle
-                  }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <h3 
-                    className="font-semibold mb-6 text-lg uppercase tracking-wider"
-                    style={{ 
-                      color: colors.accent,
-                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                      fontFamily: '"Conthrax", sans-serif',
-                      fontWeight: 700,
-                      letterSpacing: '1.5px'
-                    }}
-                  >
-                    BENDAHARA
-                  </h3>
-                  {treasurers.map((treasurer, index) => 
-                    <div key={index} className="mb-4 last:mb-0">
-                      {this.renderStudentCard(treasurer)}
-                    </div>
-                  )}
-                </motion.div>
+                {this.renderTreasurerSection()}
               </div>
             </motion.div>
 
@@ -338,27 +358,32 @@ class ClassInformation extends React.Component {
               viewport={{ once: true }}
             >
               <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
+                className="text-lg font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px',
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 600
                 }}
               >
                 STUDENTS
               </h2>
               <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-3xl"
-                style={{
-                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.4) 0%, rgba(76, 42, 89, 0.4) 100%)`,
-                  ...glassStyle
-                }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 rounded-3xl"
+                style={cardStyle}
                 whileHover={{ scale: 1.005 }}
+                transition={{ duration: 0.3 }}
               >
-                {regularStudents.map((student, index) => 
-                  this.renderStudentCard(student, index)
-                )}
+                {regularStudents.map((student, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03, duration: 0.3 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                  >
+                    {this.renderStudentCard(student, index)}
+                  </motion.div>
+                ))}
               </motion.div>
             </motion.div>
 
@@ -371,23 +396,20 @@ class ClassInformation extends React.Component {
               viewport={{ once: true }}
             >
               <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
+                className="text-lg font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px',
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 600
                 }}
               >
                 CLASS SUMMARY
               </h2>
               <motion.div
-                className="grid grid-cols-2 md:grid-cols-4 gap-6 p-10 rounded-3xl"
-                style={{
-                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.4) 0%, rgba(76, 42, 89, 0.4) 100%)`,
-                  ...glassStyle
-                }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-5 p-8 rounded-3xl"
+                style={cardStyle}
                 whileHover={{ scale: 1.005 }}
+                transition={{ duration: 0.3 }}
               >
                 {[
                   { label: "TOTAL STUDENTS", value: this.classData.getAllStudents().length },
@@ -397,34 +419,36 @@ class ClassInformation extends React.Component {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="rounded-xl p-6 text-center transition-all duration-300"
+                    className="rounded-xl p-5 text-center transition-all duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                      background: `linear-gradient(135deg, rgba(30, 30, 47, 0.8) 0%, rgba(76, 42, 89, 0.8) 100%)`,
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
                     }}
                     whileHover={{ 
                       y: -5,
-                      boxShadow: `0 8px 28px ${colors.light}40`
+                      boxShadow: `0 8px 24px ${colors.subtleGlow}`
                     }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    viewport={{ once: true }}
                   >
                     <p 
-                      className="text-sm uppercase tracking-wider mb-3" 
+                      className="text-xs uppercase tracking-wider mb-3" 
                       style={{ 
                         color: colors.accent,
-                        letterSpacing: '1px',
-                        fontFamily: '"Conthrax", sans-serif',
-                        fontWeight: 600
+                        fontFamily: '"Inter", sans-serif',
+                        fontWeight: 500
                       }}
                     >
                       {item.label}
                     </p>
                     <p 
-                      className="text-3xl font-bold" 
+                      className="text-2xl font-bold" 
                       style={{ 
                         color: colors.text,
-                        textShadow: `0 0 10px ${colors.accent}80`,
-                        fontFamily: '"Conthrax", sans-serif',
-                        fontWeight: 800
+                        fontFamily: '"Inter", sans-serif',
+                        fontWeight: 600
                       }}
                     >
                       {item.value}
