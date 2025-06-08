@@ -135,7 +135,7 @@ const Hero = () => {
             </span>
           </p>
 
-          <Button href="#pricing" white className="tech-font-bold hover:bg-cyan-500/10 hover:border-cyan-400/50 transition-all">
+          <Button href="#about" white className="tech-font-bold hover:bg-cyan-500/10 hover:border-cyan-400/50 transition-all">
             EXPLORE NOW
           </Button>
         </div>
