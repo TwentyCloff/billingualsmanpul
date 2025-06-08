@@ -1,6 +1,6 @@
 import Typewriter from "typewriter-effect";
 import { curve } from "../assets";
-import blackholeVideo from "../assets/hero/animated3.mp4";
+import blackholeVideo from "../assets/hero/animated4.webm";
 import Button from "./Button";
 import Section from "./Section";
 
