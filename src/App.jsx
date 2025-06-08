@@ -24,9 +24,8 @@ const Home = () => (
       <Header />
       <Hero />
       <Features />
-      <Benefits />
-      {/*<Services />
-      <Pricing />
+      <Services />
+      {/*<Pricing />
       <Roadmap />
       <Footer /> */}
     </div>
