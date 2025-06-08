@@ -55,7 +55,7 @@ export const navigation = [
   {
     id: "2",
     title: "Structure",
-    url: "#how-to-use",
+    url: "#class-structure",
   },
   {
     id: "3",
