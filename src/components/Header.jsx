@@ -16,8 +16,11 @@ const Header = () => {
   const [openNavigation, setOpenNavigation] = useState(false);
   const [user, setUser] = useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [headerStyle, setHeaderStyle] = useState({
+    opacity: 0,
+    backdropFilter: 'none',
+    backgroundColor: 'transparent'
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -29,28 +32,28 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY <= 10) {
-        setVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        setVisible(false);
+      const scrollY = window.scrollY;
+      
+      if (scrollY <= 10) {
+        // At the top - transparent
+        setHeaderStyle({
+          opacity: 1,
+          backdropFilter: 'none',
+          backgroundColor: 'transparent'
+        });
       } else {
-        setVisible(true);
+        // Scrolled down - blur effect
+        setHeaderStyle({
+          opacity: 1,
+          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(10, 6, 20, 0.7)'
+        });
       }
-
-      setLastScrollY(currentScrollY);
     };
 
-    const timer = setTimeout(() => {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleNavigation = () => {
     if (openNavigation) {
@@ -162,17 +165,21 @@ const Header = () => {
       <div
         ref={headerRef}
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-          openNavigation ? "bg-black/90" : "bg-transparent"
-        } ${visible ? "translate-y-0" : "-translate-y-full"}`}
-        style={{ height: "68px" }}
+          openNavigation ? "bg-black/90" : ""
+        }`}
+        style={{
+          height: "68px",
+          opacity: headerStyle.opacity,
+          backdropFilter: headerStyle.backdropFilter,
+          backgroundColor: headerStyle.backgroundColor
+        }}
       >
         <div className="flex items-center px-5 lg:px-7.5 xl:px-10 py-3 h-full">
-          {/* Logo with Rajdhani font */}
+          {/* Logo with Square Font */}
           <a
-            className="block w-auto xl:mr-8 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 font-rajdhani tracking-tighter"
+            className="block w-auto xl:mr-8 text-3xl font-bold text-white font-['Square'] tracking-tighter"
             href="#hero"
             style={{
-              textShadow: '0 0 8px rgba(110, 231, 255, 0.6)',
               letterSpacing: '-0.05em',
               fontWeight: 700
             }}
