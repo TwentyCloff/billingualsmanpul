@@ -2,22 +2,22 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Section from "./Section";
 
-// Enhanced Luxe Mocha Color Theme
+// Midnight Plum Color Theme
 const colors = {
-  dark: '#3E2C2C',       // Deep mocha
-  medium: '#9A7B6E',     // Enhanced medium mocha (lighter)
-  light: '#E8D5C5',      // Brushed cream
-  accent: '#D4A373',     // Warm gold accent
-  text: '#F8F3ED',       // Soft ivory text
-  background: '#000000'  // Deep dark background
+  dark: '#1E1E2F',       // Deep plum
+  medium: '#4C2A59',     // Royal purple
+  light: '#9E4B8A',      // Vibrant plum
+  accent: '#D67AB1',     // Pinkish accent
+  text: '#FFFFFF',       // Pure white
+  background: '#000000'  // Pure black
 };
 
 // Glassmorphism Effect
 const glassStyle = {
-  background: 'rgba(62, 44, 44, 0.25)',
+  background: 'rgba(30, 30, 47, 0.25)',
   backdropFilter: 'blur(16px)',
-  border: '1px solid rgba(214, 195, 179, 0.15)',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+  border: '1px solid rgba(158, 75, 138, 0.2)',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
 };
 
 // Main Class Structure
@@ -72,7 +72,7 @@ class Teacher {
   }
 }
 
-// React Component with Enhanced Futuristic UI
+// React Component with Midnight Plum UI
 class ClassInformation extends React.Component {
   constructor(props) {
     super(props);
@@ -118,24 +118,30 @@ class ClassInformation extends React.Component {
         className="rounded-xl p-4 mb-4 transition-all duration-300"
         style={{
           background: `linear-gradient(135deg, ${colors.dark} 0%, ${colors.medium} 100%)`,
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)'
         }}
         whileHover={{ 
           y: -5,
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.35)',
+          boxShadow: `0 12px 32px ${colors.light}40`,
           background: `linear-gradient(135deg, ${colors.medium} 0%, ${colors.dark} 100%)`
         }}
         transition={{ duration: 0.3 }}
       >
         <div className="flex justify-between items-center">
-          <h3 className="font-medium text-lg" style={{ color: colors.light }}>{student.name}</h3>
+          <h3 className="font-medium text-lg" style={{ 
+            color: colors.text,
+            fontFamily: '"Conthrax", sans-serif',
+            fontWeight: 600
+          }}>{student.name}</h3>
           {student.position && (
             <span 
               className="text-xs font-medium px-3 py-1 rounded-full"
               style={{
                 background: `linear-gradient(90deg, ${colors.accent} 0%, ${colors.light} 100%)`,
                 color: colors.dark,
-                boxShadow: '0 2px 12px rgba(212, 163, 115, 0.4)'
+                boxShadow: `0 2px 12px ${colors.accent}80`,
+                fontFamily: '"Conthrax", sans-serif',
+                fontWeight: 700
               }}
             >
               {student.position}
@@ -151,19 +157,22 @@ class ClassInformation extends React.Component {
       <motion.div
         className="rounded-2xl p-6 h-full transition-all duration-300"
         style={{
-          background: `linear-gradient(145deg, rgba(62, 44, 44, 0.7) 0%, rgba(123, 94, 87, 0.7) 100%)`,
+          background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
           ...glassStyle
         }}
         whileHover={{ 
           scale: 1.02,
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)'
+          boxShadow: `0 12px 40px ${colors.light}40`
         }}
       >
         <h3 
           className="font-semibold mb-4 text-lg uppercase tracking-wider"
           style={{ 
             color: colors.accent,
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            fontFamily: '"Conthrax", sans-serif',
+            fontWeight: 700,
+            letterSpacing: '1.5px'
           }}
         >
           {title}
@@ -184,8 +193,7 @@ class ClassInformation extends React.Component {
         <div 
           className="min-h-screen py-16 px-4 sm:px-6 lg:px-8"
           style={{
-            background: colors.background,
-            backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(154, 123, 110, 0.1) 0%, transparent 50%)'
+            background: colors.background
           }}
         >
           <motion.div
@@ -199,18 +207,24 @@ class ClassInformation extends React.Component {
               <motion.h1 
                 className="text-5xl font-bold mb-6 tracking-tight"
                 style={{ 
-                  color: colors.light,
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                  color: colors.text,
+                  textShadow: `0 0 15px ${colors.accent}80`,
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 800,
+                  letterSpacing: '-0.5px'
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                Class Structure
+                CLASS STRUCTURE
               </motion.h1>
               <motion.div 
                 className="w-32 h-1 mx-auto"
-                style={{ background: `linear-gradient(90deg, ${colors.accent}, ${colors.medium})` }}
+                style={{ 
+                  background: `linear-gradient(90deg, ${colors.accent}, ${colors.light})`,
+                  boxShadow: `0 0 10px ${colors.accent}`
+                }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
@@ -229,15 +243,17 @@ class ClassInformation extends React.Component {
                 className="text-xl font-semibold mb-8 uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px'
+                  letterSpacing: '2px',
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 700
                 }}
               >
-                Wali Kelas
+                WALI KELAS
               </h2>
               <motion.div
                 className="inline-block rounded-2xl px-10 py-8 mx-auto"
                 style={{
-                  background: `linear-gradient(145deg, rgba(62, 44, 44, 0.7) 0%, rgba(123, 94, 87, 0.7) 100%)`,
+                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
                   ...glassStyle
                 }}
                 whileHover={{ scale: 1.03 }}
@@ -245,8 +261,10 @@ class ClassInformation extends React.Component {
                 <p 
                   className="text-2xl font-medium tracking-wide"
                   style={{ 
-                    color: colors.light,
-                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                    color: colors.text,
+                    textShadow: `0 0 10px ${colors.accent}80`,
+                    fontFamily: '"Conthrax", sans-serif',
+                    fontWeight: 600
                   }}
                 >
                   {this.classData.teacher.getFormattedName()}
@@ -266,24 +284,26 @@ class ClassInformation extends React.Component {
                 className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px'
+                  letterSpacing: '2px',
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 700
                 }}
               >
-                Class Officers
+                CLASS OFFICERS
               </h2>
               
               <div className="grid md:grid-cols-3 gap-10">
                 {/* Class President */}
-                {this.renderOfficerCard("Ketua Kelas", classPresident)}
+                {this.renderOfficerCard("KETUA KELAS", classPresident)}
                 
                 {/* Secretary */}
-                {this.renderOfficerCard("Sekretaris", secretary)}
+                {this.renderOfficerCard("SEKRETARIS", secretary)}
                 
                 {/* Treasurers */}
                 <motion.div 
                   className="rounded-2xl p-6 h-full"
                   style={{
-                    background: `linear-gradient(145deg, rgba(62, 44, 44, 0.7) 0%, rgba(123, 94, 87, 0.7) 100%)`,
+                    background: `linear-gradient(145deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
                     ...glassStyle
                   }}
                   whileHover={{ scale: 1.02 }}
@@ -292,10 +312,13 @@ class ClassInformation extends React.Component {
                     className="font-semibold mb-6 text-lg uppercase tracking-wider"
                     style={{ 
                       color: colors.accent,
-                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                      fontFamily: '"Conthrax", sans-serif',
+                      fontWeight: 700,
+                      letterSpacing: '1.5px'
                     }}
                   >
-                    Bendahara
+                    BENDAHARA
                   </h3>
                   {treasurers.map((treasurer, index) => 
                     <div key={index} className="mb-4 last:mb-0">
@@ -318,15 +341,17 @@ class ClassInformation extends React.Component {
                 className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px'
+                  letterSpacing: '2px',
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 700
                 }}
               >
-                Students
+                STUDENTS
               </h2>
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-10 rounded-3xl"
                 style={{
-                  background: `linear-gradient(145deg, rgba(62, 44, 44, 0.4) 0%, rgba(123, 94, 87, 0.4) 100%)`,
+                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.4) 0%, rgba(76, 42, 89, 0.4) 100%)`,
                   ...glassStyle
                 }}
                 whileHover={{ scale: 1.005 }}
@@ -349,42 +374,46 @@ class ClassInformation extends React.Component {
                 className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
                 style={{ 
                   color: colors.accent,
-                  letterSpacing: '2px'
+                  letterSpacing: '2px',
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 700
                 }}
               >
-                Class Summary
+                CLASS SUMMARY
               </h2>
               <motion.div
                 className="grid grid-cols-2 md:grid-cols-4 gap-6 p-10 rounded-3xl"
                 style={{
-                  background: `linear-gradient(145deg, rgba(62, 44, 44, 0.4) 0%, rgba(123, 94, 87, 0.4) 100%)`,
+                  background: `linear-gradient(145deg, rgba(30, 30, 47, 0.4) 0%, rgba(76, 42, 89, 0.4) 100%)`,
                   ...glassStyle
                 }}
                 whileHover={{ scale: 1.005 }}
               >
                 {[
-                  { label: "Total Students", value: this.classData.getAllStudents().length },
-                  { label: "Class Officers", value: this.classData.getAllStudents().length - regularStudents.length },
-                  { label: "Male Students", value: 7 },
-                  { label: "Female Students", value: 18 }
+                  { label: "TOTAL STUDENTS", value: this.classData.getAllStudents().length },
+                  { label: "CLASS OFFICERS", value: this.classData.getAllStudents().length - regularStudents.length },
+                  { label: "MALE STUDENTS", value: 7 },
+                  { label: "FEMALE STUDENTS", value: 18 }
                 ].map((item, index) => (
                   <motion.div
                     key={index}
                     className="rounded-xl p-6 text-center transition-all duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(62, 44, 44, 0.7) 0%, rgba(123, 94, 87, 0.7) 100%)`,
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)'
+                      background: `linear-gradient(135deg, rgba(30, 30, 47, 0.7) 0%, rgba(76, 42, 89, 0.7) 100%)`,
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
                     }}
                     whileHover={{ 
                       y: -5,
-                      boxShadow: '0 8px 28px rgba(0, 0, 0, 0.35)'
+                      boxShadow: `0 8px 28px ${colors.light}40`
                     }}
                   >
                     <p 
                       className="text-sm uppercase tracking-wider mb-3" 
                       style={{ 
                         color: colors.accent,
-                        letterSpacing: '1px'
+                        letterSpacing: '1px',
+                        fontFamily: '"Conthrax", sans-serif',
+                        fontWeight: 600
                       }}
                     >
                       {item.label}
@@ -392,8 +421,10 @@ class ClassInformation extends React.Component {
                     <p 
                       className="text-3xl font-bold" 
                       style={{ 
-                        color: colors.light,
-                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                        color: colors.text,
+                        textShadow: `0 0 10px ${colors.accent}80`,
+                        fontFamily: '"Conthrax", sans-serif',
+                        fontWeight: 800
                       }}
                     >
                       {item.value}
