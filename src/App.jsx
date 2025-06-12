@@ -28,8 +28,9 @@ const Home = () => (
       <Hero />
       <Features />
       <ClassInformation />
-      <Pricing />
-      {/*<Roadmap />*/}
+      <GallerySlider />
+      {/*<Pricing />
+      <Roadmap />*/}
       <Footer />
     </div>
     <ButtonGradient />
