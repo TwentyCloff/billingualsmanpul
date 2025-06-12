@@ -8,8 +8,8 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div className="footer-about">
-            <div className="text-2xl font-bold text-color-1 mb-4">Qarvo</div>
-            <p className="text-white mb-6">Creating innovative products for you.</p>
+            <div className="text-2xl font-bold text-color-1 mb-4">XI-A Bilingual</div>
+            <p className="text-white mb-6">Explore Our Social Media</p>
             <div className="flex gap-4">
               {socials.map((social) => (
                 <a
@@ -37,9 +37,9 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-color-1 mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li><a href="#hero" className="text-white hover:text-color-1 transition-colors">Home</a></li>
-              <li><a href="#how-to-use" className="text-white hover:text-color-1 transition-colors">How to use</a></li>
-              <li><a href="#pricing" className="text-white hover:text-color-1 transition-colors">Pricing</a></li>
-              <li><a href="#roadmap" className="text-white hover:text-color-1 transition-colors">RoadMap</a></li>
+              <li><a href="#about" className="text-white hover:text-color-1 transition-colors">About Us</a></li>
+              <li><a href="#class-structure" className="text-white hover:text-color-1 transition-colors">Structure</a></li>
+              <li><a href="#galery" className="text-white hover:text-color-1 transition-colors">Galery</a></li>
             </ul>
           </div>
           
