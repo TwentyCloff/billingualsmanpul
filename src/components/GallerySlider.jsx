@@ -76,8 +76,8 @@ const GallerySlider = () => {
       <div className="max-w-4xl mx-auto">
         {/* Gallery Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Gallery Kenangan</h2>
-          <p className="text-gray-300">Momen berharga bersama teman-teman kelas</p>
+          <h2 className="text-3xl font-bold text-white mb-2">Our Gallery</h2>
+          <p className="text-gray-300">It contains the memories that are in our class.</p>
         </div>
 
         {/* Slider Container */}
