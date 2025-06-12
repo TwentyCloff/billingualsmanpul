@@ -60,12 +60,12 @@ export const navigation = [
   {
     id: "3",
     title: "Galery",
-    url: "#pricing",
+    url: "#gallery",
   },
   {
     id: "4",
     title: "Dashboard",
-    url: "#roadmap",
+    url: "#dashboard-admin",
   },
 ];
 
