@@ -1,21 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Button from "./Button";
-import Section from "./Section";
 
-// Import your images
+// Import gambar
 import sample1 from "../assets/hero/sample1.jpg";
 import sample2 from "../assets/hero/sample2.jpg";
 
 const GallerySlider = () => {
-  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const timeoutRef = useRef(null);
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
-  // Gallery data
+  // Data gallery
   const slides = [
     {
       id: 1,
@@ -43,7 +39,7 @@ const GallerySlider = () => {
     }
   ];
 
-  // Auto slide functionality
+  // Fungsi auto slide
   useEffect(() => {
     if (isAutoPlaying) {
       timeoutRef.current = setTimeout(() => {
@@ -76,7 +72,7 @@ const GallerySlider = () => {
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
-  // Touch event handlers for mobile swipe
+  // Handle touch untuk mobile
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -90,9 +86,9 @@ const GallerySlider = () => {
     
     const difference = touchStartX.current - touchEndX.current;
     if (difference > 5) {
-      goToNext(); // Swipe left
+      goToNext(); // Swipe kiri
     } else if (difference < -5) {
-      goToPrev(); // Swipe right
+      goToPrev(); // Swipe kanan
     }
     
     touchStartX.current = null;
@@ -102,18 +98,18 @@ const GallerySlider = () => {
 
   return (
     <Section className="overflow-hidden" id="gallery">
-      <div className="w-full min-h-screen bg-black py-20 px-4 sm:px-6 lg:px-8">
-        {/* Gallery Header */}
-        <div className="max-w-7xl mx-auto text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Gallery Kenangan</h2>
-          <p className="text-xl text-gray-300">Momen berharga bersama teman-teman kelas</p>
+      <div className="w-full min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
+        {/* Header Gallery */}
+        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">Gallery Kenangan</h2>
+          <p className="text-sm sm:text-xl text-gray-300">Momen berharga bersama teman-teman kelas</p>
         </div>
 
-        {/* Main Gallery Slider */}
+        {/* Main Slider */}
         <div className="max-w-6xl mx-auto relative group">
           {/* Slides */}
           <div 
-            className="relative h-[70vh] rounded-2xl overflow-hidden shadow-2xl"
+            className="relative h-[50vh] sm:h-[70vh] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-2xl"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -133,23 +129,23 @@ const GallerySlider = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white text-center">
-                  <h3 className="text-3xl font-bold mb-2">{slide.title}</h3>
-                  <p className="text-lg opacity-90">{slide.description}</p>
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 text-white text-center">
+                  <h3 className="text-lg sm:text-3xl font-bold mb-1 sm:mb-2">{slide.title}</h3>
+                  <p className="text-xs sm:text-lg opacity-90">{slide.description}</p>
                 </div>
               </div>
             ))}
 
-            {/* Navigation Arrows */}
+            {/* Navigation Arrows - Tampil di desktop saja */}
             <button
               onClick={() => {
                 goToPrev();
                 resetAutoPlay();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+              className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
               aria-label="Previous slide"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -158,53 +154,33 @@ const GallerySlider = () => {
                 goToNext();
                 resetAutoPlay();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+              className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
               aria-label="Next slide"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           {/* Slide Indicators */}
-          <div className="flex justify-center mt-6 space-x-2">
+          <div className="flex justify-center mt-4 sm:mt-6 space-x-2">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex ? 'bg-white w-8' : 'bg-gray-600 w-4 hover:bg-gray-400'
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? 'bg-white w-6 sm:w-8' : 'bg-gray-600 w-3 sm:w-4 hover:bg-gray-400'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="max-w-6xl mx-auto mt-4 h-1 bg-gray-800 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-white transition-all duration-500"
-            style={{
-              width: isAutoPlaying ? `${(currentIndex + 1) * (100 / slides.length)}%` : '0%',
-              transition: isAutoPlaying ? 'width 5s linear' : 'none'
-            }}
-          />
-        </div>
-
-        {/* Bottom Content */}
-        <div className="max-w-2xl mx-auto mt-16 text-center">
-          <Button
-            className="w-48"
-            onClick={() => navigate("/dashboard")}
-            white={true}
-          >
-            Kembali ke Dashboard
-          </Button>
-          <p className="mt-6 text-gray-400">
-            {currentIndex + 1} / {slides.length} • Kenangan tak terlupakan
-          </p>
+          {/* Counter Slide */}
+          <div className="text-center mt-4 text-gray-400 text-sm sm:text-base">
+            {currentIndex + 1} / {slides.length}
+          </div>
         </div>
       </div>
     </Section>
