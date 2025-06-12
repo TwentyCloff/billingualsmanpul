@@ -1,18 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 
-// Import gambar
+// Import images - make sure these paths are correct
 import sample1 from "../assets/hero/sample1.jpg";
 import sample2 from "../assets/hero/sample2.jpg";
 
 const GallerySlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const timeoutRef = useRef(null);
-  const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
-  // Data gallery
+  // Gallery data
   const slides = [
     {
       id: 1,
@@ -25,102 +23,77 @@ const GallerySlider = () => {
       image: sample2,
       title: "Kegiatan Sekolah",
       description: "Belajar dan bermain bersama"
-    },
-    {
-      id: 3,
-      image: sample1,
-      title: "Acara Tahunan",
-      description: "Peringatan hari besar sekolah"
-    },
-    {
-      id: 4,
-      image: sample2,
-      title: "Study Tour",
-      description: "Petualangan seru di luar sekolah"
     }
   ];
 
-  // Fungsi auto slide
+  // Auto slide function
+  const startAutoSlide = () => {
+    timeoutRef.current = setTimeout(() => {
+      goToNext();
+    }, 5000);
+  };
+
+  // Clear timeout on unmount
   useEffect(() => {
-    if (isAutoPlaying) {
-      timeoutRef.current = setTimeout(() => {
-        goToNext();
-      }, 5000);
-    }
+    startAutoSlide();
     return () => clearTimeout(timeoutRef.current);
-  }, [currentIndex, isAutoPlaying]);
+  }, [currentIndex]);
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === slides.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentIndex(prev => (prev + 1) % slides.length);
   };
 
   const goToPrev = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? slides.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex(prev => (prev - 1 + slides.length) % slides.length);
   };
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
-    resetAutoPlay();
-  };
-
-  const resetAutoPlay = () => {
     clearTimeout(timeoutRef.current);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+    startAutoSlide();
   };
 
-  // Handle touch untuk mobile
+  // Touch handlers for mobile
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
+    clearTimeout(timeoutRef.current);
   };
 
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX;
+  const handleTouchEnd = (e) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    handleSwipe();
+    startAutoSlide();
   };
 
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    
-    const difference = touchStartX.current - touchEndX.current;
-    if (difference > 5) {
-      goToNext(); // Swipe kiri
-    } else if (difference < -5) {
-      goToPrev(); // Swipe kanan
-    }
-    
-    touchStartX.current = null;
-    touchEndX.current = null;
-    resetAutoPlay();
+  const handleSwipe = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (diff > 50) goToNext(); // Swipe left
+    if (diff < -50) goToPrev(); // Swipe right
   };
 
   return (
-    <Section className="overflow-hidden" id="gallery">
-      <div className="w-full min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
-        {/* Header Gallery */}
-        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">Gallery Kenangan</h2>
-          <p className="text-sm sm:text-xl text-gray-300">Momen berharga bersama teman-teman kelas</p>
+    <section className="overflow-hidden bg-black w-full min-h-screen py-12 px-4" id="gallery">
+      <div className="max-w-4xl mx-auto">
+        {/* Gallery Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2">Gallery Kenangan</h2>
+          <p className="text-gray-300">Momen berharga bersama teman-teman kelas</p>
         </div>
 
-        {/* Main Slider */}
-        <div className="max-w-6xl mx-auto relative group">
+        {/* Slider Container */}
+        <div className="relative group">
           {/* Slides */}
           <div 
-            className="relative h-[50vh] sm:h-[70vh] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-2xl"
+            className="relative h-[60vh] rounded-xl overflow-hidden shadow-lg"
             onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            onMouseEnter={() => setIsAutoPlaying(false)}
-            onMouseLeave={() => setIsAutoPlaying(true)}
+            onMouseEnter={() => clearTimeout(timeoutRef.current)}
+            onMouseLeave={startAutoSlide}
           >
             {slides.map((slide, index) => (
               <div
                 key={slide.id}
-                className={`absolute inset-0 transition-opacity duration-1000 flex items-center justify-center ${
+                className={`absolute inset-0 transition-opacity duration-500 ${
                   index === currentIndex ? 'opacity-100' : 'opacity-0'
                 }`}
               >
@@ -129,62 +102,55 @@ const GallerySlider = () => {
                   alt={slide.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 text-white text-center">
-                  <h3 className="text-lg sm:text-3xl font-bold mb-1 sm:mb-2">{slide.title}</h3>
-                  <p className="text-xs sm:text-lg opacity-90">{slide.description}</p>
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                  <h3 className="text-xl font-bold text-white">{slide.title}</h3>
+                  <p className="text-gray-300">{slide.description}</p>
                 </div>
               </div>
             ))}
 
-            {/* Navigation Arrows - Tampil di desktop saja */}
+            {/* Navigation Arrows */}
             <button
               onClick={() => {
                 goToPrev();
-                resetAutoPlay();
+                clearTimeout(timeoutRef.current);
+                startAutoSlide();
               }}
-              className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-              aria-label="Previous slide"
+              className="hidden sm:block absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full items-center justify-center transition-all opacity-0 group-hover:opacity-100"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={() => {
                 goToNext();
-                resetAutoPlay();
+                clearTimeout(timeoutRef.current);
+                startAutoSlide();
               }}
-              className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-              aria-label="Next slide"
+              className="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full items-center justify-center transition-all opacity-0 group-hover:opacity-100"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           {/* Slide Indicators */}
-          <div className="flex justify-center mt-4 sm:mt-6 space-x-2">
+          <div className="flex justify-center mt-4 space-x-2">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex ? 'bg-white w-6 sm:w-8' : 'bg-gray-600 w-3 sm:w-4 hover:bg-gray-400'
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  index === currentIndex ? 'bg-white' : 'bg-gray-600'
                 }`}
-                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
-
-          {/* Counter Slide */}
-          <div className="text-center mt-4 text-gray-400 text-sm sm:text-base">
-            {currentIndex + 1} / {slides.length}
-          </div>
         </div>
       </div>
-    </Section>
+    </section>
   );
 };
 
