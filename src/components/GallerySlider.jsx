@@ -30,7 +30,7 @@ const GallerySlider = () => {
   const startAutoSlide = () => {
     timeoutRef.current = setTimeout(() => {
       goToNext();
-    }, 5000);
+    }, 2000);
   };
 
   // Clear timeout on unmount
