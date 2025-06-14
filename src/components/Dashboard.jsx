@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, doc, setDoc, updateDoc, onSnapshot, getDocs } from 'firebase/firestore';
+import { 
+  collection, doc, setDoc, updateDoc, onSnapshot, getDocs,
+  query, where, orderBy, serverTimestamp 
+} from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -54,20 +57,34 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('absensi');
-  const [absensi, setAbsensi] = useState([]);
+  
+  // Absensi State
+  const [absensiHariIni, setAbsensiHariIni] = useState({});
+  const [historiAbsensi, setHistoriAbsensi] = useState([]);
+  const [rekapAbsensi, setRekapAbsensi] = useState({});
+  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Uang Kas State
   const [uangKas, setUangKas] = useState([]);
-  const [piket, setPiket] = useState([]);
+  const [historiUangKas, setHistoriUangKas] = useState([]);
+  const [rekapUangKas, setRekapUangKas] = useState({});
+  
+  // Piket State
+  const [daftarPiket, setDaftarPiket] = useState([]);
   const [newPiket, setNewPiket] = useState({
     name: '',
     status: 'Belum Piket',
     week: 'Minggu 1',
     day: 'Senin'
   });
+  const [rekapPiket, setRekapPiket] = useState({});
 
   // Firebase collections
   const absensiRef = collection(db, 'absensi');
   const uangKasRef = collection(db, 'uangKas');
   const piketRef = collection(db, 'piket');
+  const historiAbsensiRef = collection(db, 'historiAbsensi');
+  const historiUangKasRef = collection(db, 'historiUangKas');
 
   // Auth state listener
   useEffect(() => {
@@ -83,29 +100,23 @@ const Dashboard = () => {
     if (!user) return;
 
     const initializeData = async () => {
-      // Initialize attendance
-      const absensiSnapshot = await getDocs(absensiRef);
-      if (absensiSnapshot.empty) {
-        for (const student of students) {
-          await setDoc(doc(absensiRef), {
-            name: student,
-            status: 'Hadir'
-          });
-        }
-      }
+      // Initialize today's attendance
+      const todayAbsensi = {};
+      students.forEach(student => {
+        todayAbsensi[student] = 'Hadir';
+      });
+      setAbsensiHariIni(todayAbsensi);
 
       // Initialize payments
-      const uangKasSnapshot = await getDocs(uangKasRef);
-      if (uangKasSnapshot.empty) {
-        for (const student of students) {
-          await setDoc(doc(uangKasRef), {
-            name: student,
-            status: 'Belum Bayar',
-            amount: 0,
-            week: 'Minggu 1'
-          });
-        }
-      }
+      const uangKasData = {};
+      students.forEach(student => {
+        uangKasData[student] = {
+          status: 'Belum Bayar',
+          amount: 0,
+          week: 'Minggu 1'
+        };
+      });
+      setUangKas(uangKasData);
     };
 
     initializeData();
@@ -115,39 +126,135 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
 
-    const unsubAbsensi = onSnapshot(absensiRef, (snapshot) => {
-      setAbsensi(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+    // Load attendance history
+    const unsubHistoriAbsensi = onSnapshot(
+      query(historiAbsensiRef, orderBy('date', 'desc')), 
+      (snapshot) => {
+        setHistoriAbsensi(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }
+    );
 
-    const unsubUangKas = onSnapshot(uangKasRef, (snapshot) => {
-      setUangKas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+    // Load payment history
+    const unsubHistoriUangKas = onSnapshot(
+      query(historiUangKasRef, orderBy('timestamp', 'desc')), 
+      (snapshot) => {
+        setHistoriUangKas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }
+    );
 
+    // Load cleaning schedule
     const unsubPiket = onSnapshot(piketRef, (snapshot) => {
-      setPiket(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setDaftarPiket(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
     return () => {
-      unsubAbsensi();
-      unsubUangKas();
+      unsubHistoriAbsensi();
+      unsubHistoriUangKas();
       unsubPiket();
     };
   }, [user]);
 
-  // Update functions
-  const updateAbsensi = async (id, status) => {
-    await updateDoc(doc(db, 'absensi', id), { status });
+  // Calculate attendance summary
+  useEffect(() => {
+    const summary = {};
+    students.forEach(student => {
+      summary[student] = {
+        Hadir: 0,
+        Sakit: 0,
+        Izin: 0,
+        Alpha: 0
+      };
+    });
+
+    historiAbsensi.forEach(record => {
+      if (summary[record.student]) {
+        summary[record.student][record.status]++;
+      }
+    });
+
+    setRekapAbsensi(summary);
+  }, [historiAbsensi]);
+
+  // Calculate payment summary
+  useEffect(() => {
+    const summary = {};
+    students.forEach(student => {
+      summary[student] = {
+        total: 0,
+        weeks: {}
+      };
+    });
+
+    historiUangKas.forEach(record => {
+      if (summary[record.student] && record.status === 'Sudah Bayar') {
+        summary[record.student].total += record.amount;
+        if (!summary[record.student].weeks[record.week]) {
+          summary[record.student].weeks[record.week] = 0;
+        }
+        summary[record.student].weeks[record.week] += record.amount;
+      }
+    });
+
+    setRekapUangKas(summary);
+  }, [historiUangKas]);
+
+  // Calculate cleaning schedule summary
+  useEffect(() => {
+    const summary = {};
+    students.forEach(student => {
+      summary[student] = {
+        total: 0,
+        weeks: {}
+      };
+    });
+
+    daftarPiket.forEach(record => {
+      if (summary[record.name]) {
+        if (!summary[record.name].weeks[record.week]) {
+          summary[record.name].weeks[record.week] = {
+            Sudah: 0,
+            Belum: 0
+          };
+        }
+        summary[record.name].weeks[record.week][record.status === 'Sudah Piket' ? 'Sudah' : 'Belum']++;
+        summary[record.name].total++;
+      }
+    });
+
+    setRekapPiket(summary);
+  }, [daftarPiket]);
+
+  // Handle attendance submission
+  const submitAbsensi = async () => {
+    const batch = [];
+    
+    students.forEach(student => {
+      batch.push(setDoc(doc(historiAbsensiRef), {
+        student,
+        status: absensiHariIni[student] || 'Hadir',
+        date: currentDate,
+        timestamp: serverTimestamp()
+      });
+    });
+
+    await Promise.all(batch);
   };
 
-  const updateUangKas = async (id, data) => {
-    await updateDoc(doc(db, 'uangKas', id), data);
+  // Handle payment submission
+  const submitUangKas = async (student) => {
+    await setDoc(doc(historiUangKasRef), {
+      student,
+      ...uangKas[student],
+      timestamp: serverTimestamp()
+    });
   };
 
+  // Add new cleaning schedule
   const addPiket = async () => {
     if (!newPiket.name) return;
     await setDoc(doc(piketRef), {
       ...newPiket,
-      timestamp: new Date()
+      timestamp: serverTimestamp()
     });
     setNewPiket({
       name: '',
@@ -155,10 +262,6 @@ const Dashboard = () => {
       week: 'Minggu 1',
       day: 'Senin'
     });
-  };
-
-  const updatePiket = async (id, status) => {
-    await updateDoc(doc(db, 'piket', id), { status });
   };
 
   if (loading) {
@@ -255,43 +358,146 @@ const Dashboard = () => {
           {/* Attendance Tab */}
           {activeTab === 'absensi' && (
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-6" style={{ color: colors.text, fontFamily: '"Conthrax", sans-serif' }}>
-                Data Absensi Kelas
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr style={{ borderBottomColor: colors.dark }}>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>No</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {absensi.map((item, index) => (
-                      <tr key={item.id} style={{ borderBottomColor: colors.dark }}>
-                        <td className="py-3 px-4" style={{ color: colors.text }}>{index + 1}</td>
-                        <td className="py-3 px-4" style={{ color: colors.text }}>{item.name}</td>
-                        <td className="py-3 px-4">
-                          <select
-                            value={item.status}
-                            onChange={(e) => updateAbsensi(item.id, e.target.value)}
-                            className="px-3 py-1 rounded"
-                            style={{ 
-                              background: colors.dark,
-                              color: colors.text,
-                              borderColor: colors.medium
-                            }}
-                          >
-                            {['Hadir', 'Sakit', 'Izin', 'Alpha'].map((status) => (
-                              <option key={status} value={status}>{status}</option>
-                            ))}
-                          </select>
-                        </td>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold" style={{ color: colors.text, fontFamily: '"Conthrax", sans-serif' }}>
+                  Data Absensi Kelas
+                </h2>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="date"
+                    value={currentDate}
+                    onChange={(e) => setCurrentDate(e.target.value)}
+                    className="px-3 py-1 rounded"
+                    style={{ 
+                      background: colors.dark,
+                      color: colors.text,
+                      borderColor: colors.medium
+                    }}
+                  />
+                  <button
+                    onClick={submitAbsensi}
+                    className="px-4 py-1 rounded font-medium"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                      color: colors.text
+                    }}
+                  >
+                    Simpan Absensi
+                  </button>
+                </div>
+              </div>
+
+              {/* Today's Attendance */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Absensi Hari Ini ({new Date(currentDate).toLocaleDateString('id-ID')})
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>No</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {students.map((student, index) => (
+                        <tr key={student} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{index + 1}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4">
+                            <select
+                              value={absensiHariIni[student] || 'Hadir'}
+                              onChange={(e) => setAbsensiHariIni({
+                                ...absensiHariIni,
+                                [student]: e.target.value
+                              })}
+                              className="px-3 py-1 rounded"
+                              style={{ 
+                                background: colors.dark,
+                                color: colors.text,
+                                borderColor: colors.medium
+                              }}
+                            >
+                              {['Hadir', 'Sakit', 'Izin', 'Alpha'].map((status) => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Attendance History */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Histori Absensi
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Tanggal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historiAbsensi.slice(0, 10).map((record, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {new Date(record.date).toLocaleDateString('id-ID')}
+                          </td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Attendance Summary */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Rekap Absensi
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Hadir</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Sakit</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Izin</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Alpha</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {rekapAbsensi[student]?.Hadir || 0}
+                          </td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {rekapAbsensi[student]?.Sakit || 0}
+                          </td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {rekapAbsensi[student]?.Izin || 0}
+                          </td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {rekapAbsensi[student]?.Alpha || 0}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -302,76 +508,178 @@ const Dashboard = () => {
               <h2 className="text-xl font-bold mb-6" style={{ color: colors.text, fontFamily: '"Conthrax", sans-serif' }}>
                 Data Uang Kas Kelas
               </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr style={{ borderBottomColor: colors.dark }}>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>No</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Minggu</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
-                      <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nominal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {uangKas.map((item, index) => (
-                      <tr key={item.id} style={{ borderBottomColor: colors.dark }}>
-                        <td className="py-3 px-4" style={{ color: colors.text }}>{index + 1}</td>
-                        <td className="py-3 px-4" style={{ color: colors.text }}>{item.name}</td>
-                        <td className="py-3 px-4">
-                          <select
-                            value={item.week || 'Minggu 1'}
-                            onChange={(e) => updateUangKas(item.id, { ...item, week: e.target.value })}
-                            className="px-3 py-1 rounded"
-                            style={{ 
-                              background: colors.dark,
-                              color: colors.text,
-                              borderColor: colors.medium
-                            }}
-                          >
-                            {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
-                              <option key={week} value={week}>{week}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-4">
-                          <select
-                            value={item.status || 'Belum Bayar'}
-                            onChange={(e) => updateUangKas(item.id, { 
-                              ...item, 
-                              status: e.target.value,
-                              amount: e.target.value === 'Sudah Bayar' ? item.amount || 0 : 0
-                            })}
-                            className="px-3 py-1 rounded"
-                            style={{ 
-                              background: colors.dark,
-                              color: colors.text,
-                              borderColor: colors.medium
-                            }}
-                          >
-                            {['Sudah Bayar', 'Belum Bayar'].map((status) => (
-                              <option key={status} value={status}>{status}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-4">
-                          <input
-                            type="number"
-                            value={item.amount || 0}
-                            onChange={(e) => updateUangKas(item.id, { ...item, amount: parseInt(e.target.value) || 0 })}
-                            className="px-3 py-1 rounded w-24"
-                            style={{ 
-                              background: colors.dark,
-                              color: colors.text,
-                              borderColor: colors.medium
-                            }}
-                            disabled={item.status !== 'Sudah Bayar'}
-                          />
-                        </td>
+              
+              {/* Current Payments */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Pembayaran Terkini
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>No</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Minggu</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nominal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Aksi</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {students.map((student, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{index + 1}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4">
+                            <select
+                              value={uangKas[student]?.week || 'Minggu 1'}
+                              onChange={(e) => setUangKas({
+                                ...uangKas,
+                                [student]: {
+                                  ...uangKas[student],
+                                  week: e.target.value
+                                }
+                              })}
+                              className="px-3 py-1 rounded"
+                              style={{ 
+                                background: colors.dark,
+                                color: colors.text,
+                                borderColor: colors.medium
+                              }}
+                            >
+                              {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
+                                <option key={week} value={week}>{week}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-3 px-4">
+                            <select
+                              value={uangKas[student]?.status || 'Belum Bayar'}
+                              onChange={(e) => setUangKas({
+                                ...uangKas,
+                                [student]: {
+                                  ...uangKas[student],
+                                  status: e.target.value
+                                }
+                              })}
+                              className="px-3 py-1 rounded"
+                              style={{ 
+                                background: colors.dark,
+                                color: colors.text,
+                                borderColor: colors.medium
+                              }}
+                            >
+                              {['Sudah Bayar', 'Belum Bayar'].map((status) => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              type="number"
+                              value={uangKas[student]?.amount || 0}
+                              onChange={(e) => setUangKas({
+                                ...uangKas,
+                                [student]: {
+                                  ...uangKas[student],
+                                  amount: parseInt(e.target.value) || 0
+                                }
+                              })}
+                              className="px-3 py-1 rounded w-24"
+                              style={{ 
+                                background: colors.dark,
+                                color: colors.text,
+                                borderColor: colors.medium
+                              }}
+                              disabled={uangKas[student]?.status !== 'Sudah Bayar'}
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <button
+                              onClick={() => submitUangKas(student)}
+                              className="px-3 py-1 rounded text-sm"
+                              style={{ 
+                                background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                                color: colors.text
+                              }}
+                            >
+                              Simpan
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Payment History */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Histori Pembayaran
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Tanggal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Minggu</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nominal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historiUangKas.slice(0, 10).map((record, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {new Date(record.timestamp?.seconds * 1000).toLocaleDateString('id-ID')}
+                          </td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.week}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            Rp{record.amount?.toLocaleString('id-ID')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Payment Summary */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Rekap Uang Kas
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Total Pembayaran</th>
+                        {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
+                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.light }}>{week}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            Rp{(rekapUangKas[student]?.total || 0).toLocaleString('id-ID')}
+                          </td>
+                          {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
+                            <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
+                              Rp{(rekapUangKas[student]?.weeks[week] || 0).toLocaleString('id-ID')}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -383,101 +691,154 @@ const Dashboard = () => {
                 Daftar Piket Kelas
               </h2>
               
-              {/* Add New Schedule */}
-              <div className="flex flex-wrap gap-4 mb-8">
-                <select
-                  value={newPiket.name}
-                  onChange={(e) => setNewPiket({...newPiket, name: e.target.value})}
-                  className="px-4 py-2 rounded"
-                  style={{ 
-                    background: colors.dark,
-                    color: colors.text,
-                    borderColor: colors.medium
-                  }}
-                >
-                  <option value="">Pilih Siswa</option>
-                  {students.map((student) => (
-                    <option key={student} value={student}>{student}</option>
-                  ))}
-                </select>
-                <select
-                  value={newPiket.day}
-                  onChange={(e) => setNewPiket({...newPiket, day: e.target.value})}
-                  className="px-4 py-2 rounded"
-                  style={{ 
-                    background: colors.dark,
-                    color: colors.text,
-                    borderColor: colors.medium
-                  }}
-                >
+              {/* Current Schedule */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Jadwal Piket Saat Ini
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => (
-                    <option key={day} value={day}>{day}</option>
+                    <div key={day} className="rounded-xl overflow-hidden" style={{ background: colors.dark }}>
+                      <div className="p-4" style={{ background: colors.medium }}>
+                        <h3 className="font-bold" style={{ color: colors.text }}>{day}</h3>
+                      </div>
+                      <div className="p-4">
+                        {daftarPiket
+                          .filter(item => item.day === day)
+                          .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
+                          .slice(0, 5)
+                          .map((item, index) => (
+                            <div key={index} className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.medium }}>
+                              <div>
+                                <p style={{ color: colors.text }}>{item.name}</p>
+                                <p className="text-xs" style={{ color: colors.light }}>{item.week}</p>
+                              </div>
+                              <span 
+                                className="px-2 py-1 rounded text-xs"
+                                style={{ 
+                                  background: item.status === 'Sudah Piket' ? colors.medium : colors.dark,
+                                  color: colors.text
+                                }}
+                              >
+                                {item.status}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
                   ))}
-                </select>
-                <select
-                  value={newPiket.week}
-                  onChange={(e) => setNewPiket({...newPiket, week: e.target.value})}
-                  className="px-4 py-2 rounded"
-                  style={{ 
-                    background: colors.dark,
-                    color: colors.text,
-                    borderColor: colors.medium
-                  }}
-                >
-                  {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
-                    <option key={week} value={week}>{week}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={addPiket}
-                  className="px-6 py-2 rounded font-medium"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
-                    color: colors.text
-                  }}
-                  disabled={!newPiket.name}
-                >
-                  Tambah
-                </button>
+                </div>
               </div>
 
-              {/* Schedule List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => (
-                  <div key={day} className="rounded-xl overflow-hidden" style={{ background: colors.dark }}>
-                    <div className="p-4" style={{ background: colors.medium }}>
-                      <h3 className="font-bold" style={{ color: colors.text }}>{day}</h3>
-                    </div>
-                    <div className="p-4">
-                      {piket
-                        .filter(item => item.day === day)
-                        .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
-                        .slice(0, 5)
-                        .map((item) => (
-                          <div key={item.id} className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.medium }}>
-                            <div>
-                              <p style={{ color: colors.text }}>{item.name}</p>
-                              <p className="text-xs" style={{ color: colors.light }}>{item.week}</p>
-                            </div>
-                            <select
-                              value={item.status}
-                              onChange={(e) => updatePiket(item.id, e.target.value)}
-                              className="px-2 py-1 rounded text-sm"
-                              style={{ 
-                                background: colors.dark,
-                                color: colors.text,
-                                borderColor: colors.medium
-                              }}
-                            >
-                              {['Sudah Piket', 'Belum Piket'].map((status) => (
-                                <option key={status} value={status}>{status}</option>
-                              ))}
-                            </select>
-                          </div>
+              {/* Add New Schedule */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Tambah Piket Baru
+                </h3>
+                <div className="flex flex-wrap gap-4">
+                  <select
+                    value={newPiket.name}
+                    onChange={(e) => setNewPiket({...newPiket, name: e.target.value})}
+                    className="px-4 py-2 rounded"
+                    style={{ 
+                      background: colors.dark,
+                      color: colors.text,
+                      borderColor: colors.medium
+                    }}
+                  >
+                    <option value="">Pilih Siswa</option>
+                    {students.map((student) => (
+                      <option key={student} value={student}>{student}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={newPiket.day}
+                    onChange={(e) => setNewPiket({...newPiket, day: e.target.value})}
+                    className="px-4 py-2 rounded"
+                    style={{ 
+                      background: colors.dark,
+                      color: colors.text,
+                      borderColor: colors.medium
+                    }}
+                  >
+                    {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => (
+                      <option key={day} value={day}>{day}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={newPiket.week}
+                    onChange={(e) => setNewPiket({...newPiket, week: e.target.value})}
+                    className="px-4 py-2 rounded"
+                    style={{ 
+                      background: colors.dark,
+                      color: colors.text,
+                      borderColor: colors.medium
+                    }}
+                  >
+                    {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
+                      <option key={week} value={week}>{week}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={newPiket.status}
+                    onChange={(e) => setNewPiket({...newPiket, status: e.target.value})}
+                    className="px-4 py-2 rounded"
+                    style={{ 
+                      background: colors.dark,
+                      color: colors.text,
+                      borderColor: colors.medium
+                    }}
+                  >
+                    <option value="Sudah Piket">Sudah Piket</option>
+                    <option value="Belum Piket">Belum Piket</option>
+                  </select>
+                  <button
+                    onClick={addPiket}
+                    className="px-6 py-2 rounded font-medium"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                      color: colors.text
+                    }}
+                    disabled={!newPiket.name}
+                  >
+                    Tambah
+                  </button>
+                </div>
+              </div>
+
+              {/* Cleaning Schedule Summary */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+                  Rekap Piket
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Total Piket</th>
+                        {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
+                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.light }}>{week}</th>
                         ))}
-                    </div>
-                  </div>
-                ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student, index) => (
+                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
+                            {rekapPiket[student]?.total || 0}
+                          </td>
+                          {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
+                            <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
+                              {rekapPiket[student]?.weeks[week]?.Sudah || 0} / {rekapPiket[student]?.weeks[week]?.Belum || 0}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
