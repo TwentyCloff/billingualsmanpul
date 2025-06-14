@@ -258,7 +258,7 @@ const Dashboard = () => {
         student,
         ...uangKas[student],
         timestamp: serverTimestamp()
-      };
+      });
       alert('Pembayaran berhasil disimpan!');
     } catch (error) {
       console.error("Error saving payment:", error);
@@ -277,7 +277,7 @@ const Dashboard = () => {
       await setDoc(doc(piketRef, `${newPiket.day}_${newPiket.week}_${newPiket.name}`), {
         ...newPiket,
         timestamp: serverTimestamp()
-      };
+      });
       
       setNewPiket({
         name: '',
