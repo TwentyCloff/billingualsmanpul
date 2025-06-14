@@ -65,7 +65,7 @@ export const navigation = [
   {
     id: "4",
     title: "Dashboard",
-    url: "#dashboard-admin",
+    url: "/dashboard",
   },
 ];
 
