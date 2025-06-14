@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  collection, doc, setDoc, updateDoc, onSnapshot, getDocs,
-  query, where, orderBy, serverTimestamp 
+  collection, 
+  doc, 
+  setDoc, 
+  updateDoc, 
+  onSnapshot, 
+  getDocs,
+  serverTimestamp,
+  query,
+  orderBy,
+  where
 } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -57,19 +65,13 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('absensi');
-  
-  // Absensi State
   const [absensiHariIni, setAbsensiHariIni] = useState({});
   const [historiAbsensi, setHistoriAbsensi] = useState([]);
   const [rekapAbsensi, setRekapAbsensi] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
-  
-  // Uang Kas State
-  const [uangKas, setUangKas] = useState([]);
+  const [uangKas, setUangKas] = useState({});
   const [historiUangKas, setHistoriUangKas] = useState([]);
   const [rekapUangKas, setRekapUangKas] = useState({});
-  
-  // Piket State
   const [daftarPiket, setDaftarPiket] = useState([]);
   const [newPiket, setNewPiket] = useState({
     name: '',
@@ -226,42 +228,69 @@ const Dashboard = () => {
 
   // Handle attendance submission
   const submitAbsensi = async () => {
-    const batch = [];
-    
-    students.forEach(student => {
-      batch.push(setDoc(doc(historiAbsensiRef), {
-        student,
-        status: absensiHariIni[student] || 'Hadir',
-        date: currentDate,
-        timestamp: serverTimestamp()
+    try {
+      const batch = [];
+      
+      students.forEach(student => {
+        const docRef = doc(historiAbsensiRef, `${currentDate}_${student}`);
+        batch.push(
+          setDoc(docRef, {
+            student,
+            status: absensiHariIni[student] || 'Hadir',
+            date: currentDate,
+            timestamp: serverTimestamp()
+          })
+        );
       });
-    });
 
-    await Promise.all(batch);
+      await Promise.all(batch);
+      alert('Absensi berhasil disimpan!');
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      alert('Gagal menyimpan absensi');
+    }
   };
 
   // Handle payment submission
   const submitUangKas = async (student) => {
-    await setDoc(doc(historiUangKasRef), {
-      student,
-      ...uangKas[student],
-      timestamp: serverTimestamp()
-    });
+    try {
+      await setDoc(doc(historiUangKasRef, `${Date.now()}_${student}`), {
+        student,
+        ...uangKas[student],
+        timestamp: serverTimestamp()
+      };
+      alert('Pembayaran berhasil disimpan!');
+    } catch (error) {
+      console.error("Error saving payment:", error);
+      alert('Gagal menyimpan pembayaran');
+    }
   };
 
   // Add new cleaning schedule
   const addPiket = async () => {
-    if (!newPiket.name) return;
-    await setDoc(doc(piketRef), {
-      ...newPiket,
-      timestamp: serverTimestamp()
-    });
-    setNewPiket({
-      name: '',
-      status: 'Belum Piket',
-      week: 'Minggu 1',
-      day: 'Senin'
-    });
+    try {
+      if (!newPiket.name) {
+        alert('Pilih siswa terlebih dahulu');
+        return;
+      }
+      
+      await setDoc(doc(piketRef, `${newPiket.day}_${newPiket.week}_${newPiket.name}`), {
+        ...newPiket,
+        timestamp: serverTimestamp()
+      };
+      
+      setNewPiket({
+        name: '',
+        status: 'Belum Piket',
+        week: 'Minggu 1',
+        day: 'Senin'
+      });
+      
+      alert('Piket berhasil ditambahkan!');
+    } catch (error) {
+      console.error("Error adding schedule:", error);
+      alert('Gagal menambahkan piket');
+    }
   };
 
   if (loading) {
