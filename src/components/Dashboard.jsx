@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { collection, doc, setDoc, updateDoc, onSnapshot, getDocs } from 'firebase/firestore';
-import { db, auth } from '../config/firebaseConfig';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { signOut } from 'firebase/auth';
+import { auth, db } from '../config/firebaseConfig';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 // Velvet Teal Color Theme
 const colors = {
@@ -52,7 +51,8 @@ const students = [
 ];
 
 const Dashboard = () => {
-  const [user, loading] = useAuthState(auth);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('absensi');
   const [absensi, setAbsensi] = useState([]);
   const [uangKas, setUangKas] = useState([]);
@@ -68,6 +68,15 @@ const Dashboard = () => {
   const absensiRef = collection(db, 'absensi');
   const uangKasRef = collection(db, 'uangKas');
   const piketRef = collection(db, 'piket');
+
+  // Auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Initialize data on first load
   useEffect(() => {
