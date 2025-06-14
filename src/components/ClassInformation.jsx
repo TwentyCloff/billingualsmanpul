@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import Section from "./Section";
 
@@ -20,444 +19,129 @@ const glassStyle = {
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
 };
 
-// Main Class Structure
-class SchoolClass {
-  constructor(teacher, students) {
-    this.teacher = teacher;
-    this.students = students;
-  }
-
-  getClassPresident() {
-    return this.students.find(student => student.position === 'Ketua Kelas');
-  }
-
-  getTreasurers() {
-    return this.students.filter(student => student.position && student.position.includes('Bendahara'));
-  }
-
-  getSecretary() {
-    return this.students.find(student => student.position === 'Sekretaris');
-  }
-
-  getRegularStudents() {
-    return this.students.filter(student => !student.position);
-  }
-
-  getAllStudents() {
-    return this.students;
-  }
-}
-
-// Student Class
-class Student {
-  constructor(name, position = null) {
-    this.name = name;
-    this.position = position;
-  }
-
-  getRole() {
-    return this.position || 'Siswa';
-  }
-}
-
-// Teacher Class
-class Teacher {
-  constructor(name, qualification) {
-    this.name = name;
-    this.qualification = qualification;
-  }
-
-  getFormattedName() {
-    return `${this.name} ${this.qualification}`;
-  }
-}
-
-// React Component with Velvet Teal UI
-class ClassInformation extends React.Component {
-  constructor(props) {
-    super(props);
-    
-    // Initialize class data
-    const teacher = new Teacher("Amin Abdi Luhur", "S.pd");
-    
-    const students = [
-      new Student("Alicia Shofi Destiani"),
-      new Student("Dahlia Puspita Ghaniaty"),
-      new Student("Dara Veronika Tariggas", "Bendahara 1"),
-      new Student("Fairuz Sahla Fallugah"),
-      new Student("Farid Ulya Firjatullah"),
-      new Student("Fathul Faigan Alfi"),
-      new Student("Fredy Gabriell Tanjaya"),
-      new Student("Kalinda Pradipa", "Bendahara 2"),
-      new Student("Kania Permata Widra", "Sekretaris"),
-      new Student("Keisya Ramadhani Huuriyah"),
-      new Student("Kenzo Alvaro Bautista"),
-      new Student("Keysha Aulia"),
-      new Student("Kiran Adhya Narisha"),
-      new Student("Juliandika"),
-      new Student("Muhammad Fakhar"),
-      new Student("Nadine Rannu Gracia", "Ketua Kelas"),
-      new Student("Rahadatul Aisy Hadraini"),
-      new Student("Raden Mecca Puti A"),
-      new Student("Raisya Permata Intania W"),
-      new Student("Salsabiela Azzahra B"),
-      new Student("Sandi Gunawan"),
-      new Student("Shabrina Aqela"),
-      new Student("Syaira Parifasha"),
-      new Student("Syifa Azzahra Rifai"),
-      new Student("Utin Muzfira Amira Fenisa")
-    ];
-    
-    this.classData = new SchoolClass(teacher, students);
-  }
-
-  renderStudentCard(student, index) {
-    return (
-      <motion.div
-        key={index}
-        className="rounded-xl p-4 mb-4 transition-all duration-300"
-        style={{
-          background: `linear-gradient(135deg, ${colors.dark} 0%, rgba(31, 96, 96, 0.8) 100%)`,
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)'
-        }}
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        whileHover={{ 
-          y: -8,
-          scale: 1.03,
-          boxShadow: `0 12px 32px ${colors.medium}40`,
-          background: `linear-gradient(135deg, rgba(31, 96, 96, 0.8) 0%, ${colors.dark} 100%)`
-        }}
-        transition={{ duration: 0.4, type: "spring", stiffness: 300 }}
+const AboutUs = () => {
+  return (
+    <Section 
+      id="about"
+      crosses
+      className="pt-[6rem] -mt-[2.5rem]"
+    >
+      <div 
+        className="min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8"
+        style={{ background: colors.background }}
       >
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium text-lg" style={{ 
-            color: colors.text,
-            fontFamily: '"Conthrax", sans-serif',
-            fontWeight: 600
-          }}>{student.name}</h3>
-          {student.position && (
-            <motion.span 
-              className="text-xs font-medium px-3 py-1 rounded-full"
-              style={{
-                background: `linear-gradient(90deg, ${colors.medium} 0%, ${colors.light} 100%)`,
-                color: colors.dark,
-                boxShadow: `0 2px 12px ${colors.medium}80`,
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-7xl mx-auto"
+        >
+          {/* Header */}
+          <div className="text-center mb-16">
+            <motion.h2 
+              className="text-5xl font-bold mb-6 tracking-tight relative"
+              style={{ 
+                color: colors.text,
+                textShadow: `0 0 15px ${colors.medium}80`,
                 fontFamily: '"Conthrax", sans-serif',
-                fontWeight: 700
+                fontWeight: 800,
+                letterSpacing: '-0.5px'
               }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              {student.position}
-            </motion.span>
-          )}
-        </div>
-      </motion.div>
-    );
-  }
-
-  renderOfficerCard(title, officer, isTreasurer = false) {
-    return (
-      <motion.div
-        className="rounded-2xl p-6 h-full transition-all duration-300"
-        style={{
-          background: `linear-gradient(145deg, rgba(27, 66, 66, 0.7) 0%, rgba(31, 96, 96, 0.7) 100%)`,
-          ...glassStyle
-        }}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        whileHover={{ 
-          scale: 1.03,
-          boxShadow: `0 12px 40px ${colors.medium}40`
-        }}
-        transition={{ duration: 0.5 }}
-      >
-        <h3 
-          className="font-semibold mb-4 text-lg uppercase tracking-wider"
-          style={{ 
-            color: colors.light,
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            fontFamily: '"Conthrax", sans-serif',
-            fontWeight: 700,
-            letterSpacing: '1.5px'
-          }}
-        >
-          {title}
-        </h3>
-        {isTreasurer ? (
-          officer.map((treasurer, index) => (
-            <motion.div 
-              key={index}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              {this.renderStudentCard(treasurer)}
-            </motion.div>
-          ))
-        ) : (
-          officer && this.renderStudentCard(officer)
-        )}
-      </motion.div>
-    );
-  }
-
-  render() {
-    const classPresident = this.classData.getClassPresident();
-    const treasurers = this.classData.getTreasurers();
-    const secretary = this.classData.getSecretary();
-    const regularStudents = this.classData.getRegularStudents();
-
-    return (
-      <Section id="class-structure">
-        <div 
-          className="min-h-screen py-16 px-4 sm:px-6 lg:px-8"
-          style={{
-            background: colors.background
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-7xl mx-auto"
-          >
-            {/* Header */}
-            <div className="text-center mb-20">
-              <motion.h1 
-                className="text-5xl font-bold mb-6 tracking-tight"
-                style={{ 
-                  color: colors.text,
-                  textShadow: `0 0 15px ${colors.medium}80`,
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 800,
-                  letterSpacing: '-0.5px'
-                }}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                CLASS STRUCTURE
-              </motion.h1>
+              ABOUT US
               <motion.div 
-                className="w-32 h-1 mx-auto"
+                className="w-64 h-1 mx-auto mt-4"
                 style={{ 
                   background: `linear-gradient(90deg, ${colors.medium}, ${colors.light})`,
                   boxShadow: `0 0 10px ${colors.medium}`
                 }}
                 initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
+                whileInView={{ scaleX: 1 }}
                 transition={{ delay: 0.4, duration: 0.8, type: "spring" }}
               ></motion.div>
-            </div>
+            </motion.h2>
 
-            {/* Teacher Section */}
+            {/* Content */}
             <motion.div 
-              className="mb-20 text-center"
+              className="max-w-4xl mx-auto p-8 rounded-2xl space-y-8"
+              style={{
+                background: `linear-gradient(145deg, rgba(27, 66, 66, 0.4) 0%, rgba(31, 96, 96, 0.4) 100%)`,
+                ...glassStyle
+              }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, type: "spring" }}
+              transition={{ duration: 0.8, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <h2 
-                className="text-xl font-semibold mb-8 uppercase tracking-wider"
+              <motion.p 
+                className="text-xl leading-relaxed"
                 style={{ 
                   color: colors.light,
-                  letterSpacing: '2px',
                   fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
+                  fontWeight: 600
                 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                viewport={{ once: true }}
               >
-                WALI KELAS
-              </h2>
-              <motion.div
-                className="inline-block rounded-2xl px-10 py-8 mx-auto"
-                style={{
-                  background: `linear-gradient(145deg, rgba(27, 66, 66, 0.7) 0%, rgba(31, 96, 96, 0.7) 100%)`,
-                  ...glassStyle
-                }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <p 
-                  className="text-2xl font-medium tracking-wide"
-                  style={{ 
-                    color: colors.text,
-                    textShadow: `0 0 10px ${colors.medium}80`,
-                    fontFamily: '"Conthrax", sans-serif',
-                    fontWeight: 600
-                  }}
-                >
-                  {this.classData.teacher.getFormattedName()}
-                </p>
-              </motion.div>
-            </motion.div>
-
-            {/* Class Officers */}
-            <motion.div 
-              className="mb-20"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
-                style={{ 
-                  color: colors.light,
-                  letterSpacing: '2px',
-                  fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
-                }}
-              >
-                CLASS OFFICERS
-              </h2>
+                In our bilingual class, every day brings something new to discover. Learning in two languages makes things more exciting — not just in lessons, but in how we connect with each other.
+              </motion.p>
               
-              <div className="grid md:grid-cols-3 gap-8">
-                {/* Class President */}
-                {this.renderOfficerCard("KETUA KELAS", classPresident)}
-                
-                {/* Secretary */}
-                {this.renderOfficerCard("SEKRETARIS", secretary)}
-                
-                {/* Treasurers */}
-                {this.renderOfficerCard("BENDAHARA", treasurers, true)}
-              </div>
-            </motion.div>
-
-            {/* Regular Students */}
-            <motion.div 
-              className="mb-20"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
+              <motion.p 
+                className="text-xl leading-relaxed"
                 style={{ 
                   color: colors.light,
-                  letterSpacing: '2px',
                   fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
-                }}
-              >
-                STUDENTS
-              </h2>
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 rounded-3xl"
-                style={{
-                  background: `linear-gradient(145deg, rgba(27, 66, 66, 0.4) 0%, rgba(31, 96, 96, 0.4) 100%)`,
-                  ...glassStyle
+                  fontWeight: 500
                 }}
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.1 }}
+                transition={{ delay: 0.6 }}
                 viewport={{ once: true }}
               >
-                {regularStudents.map((student, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                  >
-                    {this.renderStudentCard(student, index)}
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* Class Summary */}
-            <motion.div 
-              className="mb-16"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 
-                className="text-xl font-semibold mb-12 text-center uppercase tracking-wider"
+                We work together, share ideas, and enjoy the process of growing as a team. The classroom feels lively, welcoming, and full of curiosity.
+              </motion.p>
+              
+              <motion.p 
+                className="text-xl leading-relaxed italic"
                 style={{ 
                   color: colors.light,
-                  letterSpacing: '2px',
                   fontFamily: '"Conthrax", sans-serif',
-                  fontWeight: 700
-                }}
-              >
-                CLASS SUMMARY
-              </h2>
-              <motion.div
-                className="grid grid-cols-2 md:grid-cols-4 gap-5 p-8 rounded-3xl"
-                style={{
-                  background: `linear-gradient(145deg, rgba(27, 66, 66, 0.4) 0%, rgba(31, 96, 96, 0.4) 100%)`,
-                  ...glassStyle
+                  fontWeight: 500
                 }}
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.1 }}
+                transition={{ delay: 0.8 }}
                 viewport={{ once: true }}
               >
-                {[
-                  { label: "TOTAL STUDENTS", value: this.classData.getAllStudents().length },
-                  { label: "CLASS OFFICERS", value: this.classData.getAllStudents().length - regularStudents.length },
-                  { label: "MALE STUDENTS", value: 7 },
-                  { label: "FEMALE STUDENTS", value: 18 }
-                ].map((item, index) => (
-                  <motion.div
-                    key={index}
-                    className="rounded-xl p-5 text-center transition-all duration-300"
-                    style={{
-                      background: `linear-gradient(135deg, rgba(27, 66, 66, 0.7) 0%, rgba(31, 96, 96, 0.7) 100%)`,
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-                    }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ 
-                      y: -8,
-                      scale: 1.05,
-                      boxShadow: `0 8px 28px ${colors.medium}40`
-                    }}
-                  >
-                    <p 
-                      className="text-sm uppercase tracking-wider mb-3" 
-                      style={{ 
-                        color: colors.light,
-                        letterSpacing: '1px',
-                        fontFamily: '"Conthrax", sans-serif',
-                        fontWeight: 600
-                      }}
-                    >
-                      {item.label}
-                    </p>
-                    <p 
-                      className="text-3xl font-bold" 
-                      style={{ 
-                        color: colors.text,
-                        textShadow: `0 0 10px ${colors.medium}80`,
-                        fontFamily: '"Conthrax", sans-serif',
-                        fontWeight: 800
-                      }}
-                    >
-                      {item.value}
-                    </p>
-                  </motion.div>
-                ))}
-              </motion.div>
+                Whether we're doing projects, having discussions, or just talking during breaks, there's always a sense of togetherness.
+              </motion.p>
+              
+              <motion.p 
+                className="text-xl leading-relaxed"
+                style={{ 
+                  color: colors.text,
+                  fontFamily: '"Conthrax", sans-serif',
+                  fontWeight: 700,
+                  textShadow: `0 0 8px ${colors.medium}`
+                }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 1.0 }}
+                viewport={{ once: true }}
+              >
+                It's a place where everyone feels comfortable, supported, and motivated to learn.
+              </motion.p>
             </motion.div>
-          </motion.div>
-        </div>
-      </Section>
-    );
-  }
-}
+          </div>
+        </motion.div>
+      </div>
+    </Section>
+  );
+};
 
-export default ClassInformation;
+export default AboutUs;
