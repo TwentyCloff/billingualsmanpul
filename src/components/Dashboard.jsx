@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, onSnapshot, getDocs } from 'firebase/firestore';
 import { db, auth } from '../config/firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { signOut } from 'firebase/auth';
@@ -77,25 +77,25 @@ const Dashboard = () => {
       // Initialize attendance
       const absensiSnapshot = await getDocs(absensiRef);
       if (absensiSnapshot.empty) {
-        students.forEach(async (student) => {
+        for (const student of students) {
           await setDoc(doc(absensiRef), {
             name: student,
             status: 'Hadir'
-          };
-        });
+          });
+        }
       }
 
       // Initialize payments
       const uangKasSnapshot = await getDocs(uangKasRef);
       if (uangKasSnapshot.empty) {
-        students.forEach(async (student) => {
+        for (const student of students) {
           await setDoc(doc(uangKasRef), {
             name: student,
             status: 'Belum Bayar',
             amount: 0,
             week: 'Minggu 1'
-          };
-        });
+          });
+        }
       }
     };
 
@@ -442,7 +442,7 @@ const Dashboard = () => {
                     <div className="p-4">
                       {piket
                         .filter(item => item.day === day)
-                        .sort((a, b) => a.timestamp?.seconds - b.timestamp?.seconds)
+                        .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
                         .slice(0, 5)
                         .map((item) => (
                           <div key={item.id} className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.medium }}>
