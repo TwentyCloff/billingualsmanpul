@@ -278,7 +278,7 @@ const Footer = () => {
                   fontWeight: 700
                 }}
               >
-                &copy; {new Date().getFullYear()} Qarvo
+                &copy; {new Date().getFullYear()} XI-A Smanpul
               </span>. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
