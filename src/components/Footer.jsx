@@ -225,15 +225,15 @@ const Footer = () => {
               <ul className="space-y-4">
                 {[
                   { 
-                    content: <a href="mailto:Qarvo@gmail.com">Qarvo@gmail.com</a>, 
+                    content: <a href="mailto:test@gmail.com">test@gmail.com</a>, 
                     icon: "✉️" 
                   },
                   { 
-                    content: <a href="tel:+62082155789956">+62-0821-5578-9956</a>, 
+                    content: <a href="tel:+6208123456789">+62-081-2345-6789</a>, 
                     icon: "📞" 
                   },
                   { content: "Asia", icon: "🌏" },
-                  { content: "Jakarta, Indonesia", icon: "📍" }
+                  { content: "Pontianak, Indonesia", icon: "📍" }
                 ].map((item, index) => (
                   <motion.li
                     key={index}
