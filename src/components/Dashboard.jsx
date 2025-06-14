@@ -323,7 +323,7 @@ const Dashboard = () => {
             Anda harus login terlebih dahulu untuk mengakses dashboard ini.
           </p>
           <a 
-            href="/login" 
+            href="/signin" 
             className="px-6 py-3 rounded-lg font-medium transition-all"
             style={{ 
               background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
