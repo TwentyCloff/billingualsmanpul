@@ -137,63 +137,6 @@ const AboutUs = () => {
                 It's a place where everyone feels comfortable, supported, and motivated to learn.
               </motion.p>
             </motion.div>
-
-            {/* Stats */}
-            <motion.div 
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
-              viewport={{ once: true }}
-            >
-              {[
-                { number: "25", label: "STUDENTS" },
-                { number: "2", label: "LANGUAGES" },
-                { number: "100%", label: "TEAM SPIRIT" },
-                { number: "24/7", label: "LEARNING" }
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  className="p-6 rounded-xl text-center"
-                  style={{
-                    background: `linear-gradient(135deg, rgba(27, 66, 66, 0.7) 0%, rgba(31, 96, 96, 0.7) 100%)`,
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-                  }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ 
-                    y: -8,
-                    scale: 1.05,
-                    boxShadow: `0 8px 28px ${colors.medium}40`
-                  }}
-                >
-                  <p 
-                    className="text-4xl font-bold mb-2" 
-                    style={{ 
-                      color: colors.text,
-                      textShadow: `0 0 10px ${colors.medium}80`,
-                      fontFamily: '"Conthrax", sans-serif',
-                      fontWeight: 800
-                    }}
-                  >
-                    {stat.number}
-                  </p>
-                  <p 
-                    className="text-sm uppercase tracking-wider" 
-                    style={{ 
-                      color: colors.light,
-                      letterSpacing: '1px',
-                      fontFamily: '"Conthrax", sans-serif',
-                      fontWeight: 600
-                    }}
-                  >
-                    {stat.label}
-                  </p>
-                </motion.div>
-              ))}
-            </motion.div>
           </div>
         </motion.div>
       </div>
