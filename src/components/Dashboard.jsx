@@ -378,7 +378,7 @@ const Dashboard = () => {
         amount: parseInt(amount),
         description: description,
         timestamp: serverTimestamp()
-      };
+      });
       alert('Pengeluaran berhasil dicatat!');
     } catch (error) {
       console.error("Error saving expense:", error);
