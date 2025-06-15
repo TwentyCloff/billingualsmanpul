@@ -399,7 +399,7 @@ const Dashboard = () => {
         amount: amount,
         description: expenseDescription,
         timestamp: serverTimestamp()
-      };
+      });
       
       setShowExpenseModal(false);
       setExpenseAmount('');
@@ -421,7 +421,7 @@ const Dashboard = () => {
         day: day,
         status: 'Belum Piket',
         timestamp: serverTimestamp()
-      };
+      });
       
       setShowStudentModal(false);
       setSearchStudent('');
