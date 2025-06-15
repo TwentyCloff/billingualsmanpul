@@ -16,24 +16,24 @@ import {
 import { auth, db } from '../config/firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
-// Modern Color Theme
+// Original Velvet Teal Color Theme
 const colors = {
-  primary: '#4361ee',
-  secondary: '#3f37c9',
-  accent: '#4895ef',
-  danger: '#f72585',
-  warning: '#f77f00',
-  success: '#4cc9f0',
-  dark: '#1b263b',
-  light: '#f8f9fa',
-  background: '#0a1128'
+  dark: '#1B4242',
+  medium: '#4FBDBA',
+  light: '#CDEED6',
+  text: '#FFFFFF',
+  background: '#000000',
+  success: '#2ECC71',
+  warning: '#F39C12',
+  danger: '#E74C3C',
+  info: '#3498DB'
 };
 
 // Glassmorphism Effect
 const glassStyle = {
-  background: 'rgba(67, 97, 238, 0.15)',
+  background: 'rgba(27, 66, 66, 0.25)',
   backdropFilter: 'blur(16px)',
-  border: '1px solid rgba(63, 55, 201, 0.2)',
+  border: '1px solid rgba(79, 189, 186, 0.2)',
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
   borderRadius: '16px'
 };
@@ -69,14 +69,16 @@ const students = [
 
 // Status colors
 const statusColors = {
-  Hadir: '#4cc9f0',
-  Sakit: '#f77f00',
-  Izin: '#4361ee',
-  Alpha: '#f72585',
-  'Sudah Bayar': '#4cc9f0',
-  'Belum Bayar': '#f72585',
-  'Sudah Piket': '#4cc9f0',
-  'Belum Piket': '#f72585'
+  Hadir: colors.success,
+  Sakit: colors.warning,
+  Izin: colors.info,
+  Alpha: colors.danger,
+  'Sudah Bayar': colors.success,
+  'Belum Bayar': colors.danger,
+  'Sudah Piket': colors.success,
+  'Belum Piket': colors.danger,
+  'Sudah Bayar Denda': colors.success,
+  'Belum Bayar Denda': colors.danger
 };
 
 const Dashboard = () => {
@@ -95,12 +97,17 @@ const Dashboard = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentWeek, setPaymentWeek] = useState('Minggu 1');
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [expenseDescription, setExpenseDescription] = useState('');
   const [totalKas, setTotalKas] = useState(0);
   const [totalPengeluaran, setTotalPengeluaran] = useState(0);
-  const [saldoKas, setSaldoKas] = useState(0);
+  const [kasHariIni, setKasHariIni] = useState(0);
+  const [selectedPiketDay, setSelectedPiketDay] = useState('Senin');
+  const [selectedPiketStudent, setSelectedPiketStudent] = useState('');
 
   // Firebase collections
   const absensiRef = collection(db, 'absensi');
@@ -109,6 +116,7 @@ const Dashboard = () => {
   const historiAbsensiRef = collection(db, 'historiAbsensi');
   const historiUangKasRef = collection(db, 'historiUangKas');
   const kasRef = collection(db, 'kas');
+  const dendaPiketRef = collection(db, 'dendaPiket');
 
   // Auth state listener
   useEffect(() => {
@@ -138,6 +146,12 @@ const Dashboard = () => {
         setIsSaved(false);
       } else {
         setIsSaved(true);
+        // Load today's attendance
+        const todayAbsensi = {};
+        todaySnapshot.forEach(doc => {
+          todayAbsensi[doc.data().student] = doc.data().status;
+        });
+        setAbsensiHariIni(todayAbsensi);
       }
 
       // Initialize payments
@@ -184,11 +198,18 @@ const Dashboard = () => {
     const unsubKas = onSnapshot(kasRef, (snapshot) => {
       let total = 0;
       let pengeluaran = 0;
+      let todayIncome = 0;
+      const today = new Date().toISOString().split('T')[0];
       
       snapshot.docs.forEach(doc => {
         const data = doc.data();
+        const docDate = new Date(data.timestamp?.seconds * 1000).toISOString().split('T')[0];
+        
         if (data.type === 'pemasukan') {
           total += data.amount;
+          if (docDate === today) {
+            todayIncome += data.amount;
+          }
         } else {
           pengeluaran += data.amount;
         }
@@ -196,7 +217,24 @@ const Dashboard = () => {
       
       setTotalKas(total);
       setTotalPengeluaran(pengeluaran);
-      setSaldoKas(total - pengeluaran);
+      setKasHariIni(todayIncome);
+    });
+
+    // Load denda piket
+    const unsubDenda = onSnapshot(dendaPiketRef, (snapshot) => {
+      const dendaData = {};
+      snapshot.docs.forEach(doc => {
+        dendaData[doc.data().student] = doc.data().status;
+      });
+      
+      setRekapPiket(prev => {
+        const updated = {...prev};
+        students.forEach(student => {
+          if (!updated[student]) updated[student] = {};
+          updated[student].dendaStatus = dendaData[student] || 'Belum Bayar Denda';
+        });
+        return updated;
+      });
     });
 
     return () => {
@@ -204,6 +242,7 @@ const Dashboard = () => {
       unsubHistoriUangKas();
       unsubPiket();
       unsubKas();
+      unsubDenda();
     };
   }, [user]);
 
@@ -257,7 +296,8 @@ const Dashboard = () => {
     students.forEach(student => {
       summary[student] = {
         total: 0,
-        weeks: {}
+        weeks: {},
+        dendaStatus: 'Belum Bayar Denda'
       };
     });
 
@@ -351,7 +391,7 @@ const Dashboard = () => {
         amount: amount,
         week: paymentWeek,
         timestamp: serverTimestamp()
-      });
+      };
       
       // Add to kas
       await setDoc(doc(kasRef, docId), {
@@ -359,7 +399,7 @@ const Dashboard = () => {
         amount: amount,
         description: `Pembayaran kas dari ${currentStudent} (${paymentWeek})`,
         timestamp: serverTimestamp()
-      });
+      };
       
       setShowPaymentModal(false);
       alert('Pembayaran berhasil disimpan!');
@@ -370,19 +410,84 @@ const Dashboard = () => {
   };
 
   // Handle expense submission
-  const submitPengeluaran = async (amount, description) => {
+  const submitPengeluaran = async () => {
     try {
+      if (!expenseAmount || isNaN(expenseAmount) || !expenseDescription) {
+        alert('Masukkan nominal dan keterangan yang valid');
+        return;
+      }
+      
+      const amount = parseInt(expenseAmount);
       const docId = `expense_${Date.now()}`;
+      
       await setDoc(doc(kasRef, docId), {
         type: 'pengeluaran',
-        amount: parseInt(amount),
-        description: description,
+        amount: amount,
+        description: expenseDescription,
         timestamp: serverTimestamp()
       });
+      
+      setShowExpenseModal(false);
+      setExpenseAmount('');
+      setExpenseDescription('');
       alert('Pengeluaran berhasil dicatat!');
     } catch (error) {
       console.error("Error saving expense:", error);
       alert('Gagal mencatat pengeluaran');
+    }
+  };
+
+  // Handle piket submission
+  const submitPiket = async (day, student) => {
+    try {
+      const docId = `${day}_${student}`;
+      
+      await setDoc(doc(piketRef, docId), {
+        name: student,
+        day: day,
+        status: 'Sudah Piket',
+        timestamp: serverTimestamp()
+      });
+      
+      alert(`${student} sudah piket pada hari ${day}`);
+    } catch (error) {
+      console.error("Error saving piket:", error);
+      alert('Gagal menyimpan data piket');
+    }
+  };
+
+  // Handle belum piket submission
+  const submitBelumPiket = async (day, student) => {
+    try {
+      const docId = `${day}_${Date.now()}_${student}`;
+      
+      await setDoc(doc(piketRef, docId), {
+        name: student,
+        day: day,
+        status: 'Belum Piket',
+        timestamp: serverTimestamp()
+      });
+      
+      alert(`${student} belum piket pada hari ${day}`);
+    } catch (error) {
+      console.error("Error saving belum piket:", error);
+      alert('Gagal menyimpan data belum piket');
+    }
+  };
+
+  // Handle bayar denda
+  const bayarDenda = async (student) => {
+    try {
+      await setDoc(doc(dendaPiketRef, student), {
+        student: student,
+        status: 'Sudah Bayar Denda',
+        timestamp: serverTimestamp()
+      };
+      
+      alert(`Denda piket untuk ${student} sudah dibayar`);
+    } catch (error) {
+      console.error("Error saving denda:", error);
+      alert('Gagal menyimpan pembayaran denda');
     }
   };
 
@@ -398,7 +503,7 @@ const Dashboard = () => {
       className="px-3 py-1 rounded-full text-xs font-medium"
       style={{ 
         backgroundColor: statusColors[status] || colors.dark,
-        color: colors.light
+        color: colors.text
       }}
     >
       {status}
@@ -412,7 +517,7 @@ const Dashboard = () => {
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-t-transparent"
-          style={{ borderColor: colors.accent }}
+          style={{ borderColor: colors.medium }}
         ></motion.div>
       </div>
     );
@@ -428,7 +533,7 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-2xl font-bold mb-6" style={{ color: colors.light }}>
+          <h2 className="text-2xl font-bold mb-6" style={{ color: colors.text }}>
             Akses Ditolak
           </h2>
           <p className="mb-6" style={{ color: colors.light }}>
@@ -438,8 +543,8 @@ const Dashboard = () => {
             href="/login" 
             className="px-6 py-3 rounded-lg font-medium transition-all"
             style={{ 
-              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-              color: colors.light,
+              background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+              color: colors.text,
               display: 'inline-block'
             }}
           >
@@ -455,15 +560,15 @@ const Dashboard = () => {
       {/* Header */}
       <header className="p-6" style={glassStyle}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold" style={{ color: colors.light }}>
+          <h1 className="text-2xl font-bold" style={{ color: colors.text }}>
             Dashboard Sekretaris XI-A Bilingual
           </h1>
           <button 
             onClick={() => signOut(auth)}
             className="px-4 py-2 rounded-lg text-sm"
             style={{ 
-              background: `linear-gradient(135deg, ${colors.danger}, rgba(247, 37, 133, 0.8))`,
-              color: colors.light
+              background: `linear-gradient(135deg, ${colors.dark}, rgba(31, 96, 96, 0.8))`,
+              color: colors.text
             }}
           >
             Logout
@@ -485,7 +590,7 @@ const Dashboard = () => {
               {activeTab === tab && (
                 <motion.div 
                   className="absolute bottom-0 left-0 right-0 h-1"
-                  style={{ background: colors.accent }}
+                  style={{ background: colors.medium }}
                   layoutId="underline"
                 />
               )}
@@ -494,215 +599,121 @@ const Dashboard = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="rounded-2xl overflow-hidden" style={glassStyle}>
+        <div className="space-y-8">
           {/* Attendance Tab */}
           {activeTab === 'absensi' && (
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold" style={{ color: colors.light }}>
-                  Data Absensi Kelas
-                </h2>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="date"
-                    value={currentDate}
-                    onChange={(e) => setCurrentDate(e.target.value)}
-                    className="px-3 py-1 rounded"
-                    style={{ 
-                      background: colors.dark,
-                      color: colors.light,
-                      borderColor: colors.accent
-                    }}
-                  />
-                  {isSaved ? (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditMode(true)}
-                        className="px-4 py-1 rounded font-medium flex items-center gap-1"
-                        style={{ 
-                          background: colors.warning,
-                          color: colors.light
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={submitAbsensi}
-                      className="px-4 py-1 rounded font-medium"
+            <>
+              {/* Today's Attendance Card */}
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold" style={{ color: colors.text }}>
+                    Absensi Hari Ini ({formatDate(currentDate)})
+                  </h2>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="date"
+                      value={currentDate}
+                      onChange={(e) => setCurrentDate(e.target.value)}
+                      className="px-3 py-1 rounded"
                       style={{ 
-                        background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                        color: colors.light
+                        background: colors.dark,
+                        color: colors.text,
+                        borderColor: colors.medium
                       }}
-                    >
-                      Simpan Absensi
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Attendance Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Today's Attendance Card */}
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold" style={{ color: colors.light }}>
-                      Absensi Hari Ini
-                    </h3>
-                    <span className="text-sm" style={{ color: colors.accent }}>
-                      {formatDate(currentDate)}
-                    </span>
-                  </div>
-                  {isSaved ? (
-                    <div className="text-center py-8">
-                      <p style={{ color: colors.light }}>Absensi hari ini sudah dilakukan</p>
-                      {editMode && (
-                        <p className="text-xs mt-2" style={{ color: colors.warning }}>
-                          Mode edit aktif. Perubahan akan mengganti data sebelumnya.
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                      {students.map((student) => (
-                        <div key={student} className="flex justify-between items-center">
-                          <p style={{ color: colors.light }} className="truncate">{student}</p>
-                          <select
-                            value={absensiHariIni[student] || 'Hadir'}
-                            onChange={(e) => setAbsensiHariIni({
-                              ...absensiHariIni,
-                              [student]: e.target.value
-                            })}
-                            className="px-2 py-1 rounded text-sm"
-                            style={{ 
-                              background: colors.background,
-                              color: colors.light,
-                              borderColor: colors.accent
-                            }}
-                          >
-                            {['Hadir', 'Sakit', 'Izin', 'Alpha'].map((status) => (
-                              <option key={status} value={status}>{status}</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Attendance Status Overview */}
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
-                  <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                    Status Absensi Hari Ini
-                  </h3>
-                  <div className="space-y-4">
-                    {['Hadir', 'Sakit', 'Izin', 'Alpha'].map((status) => {
-                      const count = isSaved 
-                        ? historiAbsensi.filter(
-                            record => record.date === currentDate && record.status === status
-                          ).length
-                        : Object.values(absensiHariIni).filter(val => val === status).length;
-                      
-                      return (
-                        <div key={status} className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: statusColors[status] }}
-                            ></div>
-                            <span style={{ color: colors.light }}>{status}</span>
-                          </div>
-                          <span style={{ color: colors.light }}>{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
-                  <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                    Quick Actions
-                  </h3>
-                  <div className="space-y-3">
-                    {!isSaved && (
+                    />
+                    {isSaved ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditMode(true)}
+                          className="px-4 py-1 rounded font-medium flex items-center gap-1"
+                          style={{ 
+                            background: colors.warning,
+                            color: colors.text
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         onClick={submitAbsensi}
-                        className="w-full py-2 rounded font-medium text-sm"
+                        className="px-4 py-1 rounded font-medium"
                         style={{ 
-                          background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                          color: colors.light
+                          background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                          color: colors.text
                         }}
                       >
                         Simpan Absensi
                       </button>
                     )}
-                    {isSaved && editMode && (
-                      <button
-                        onClick={editAbsensi}
-                        className="w-full py-2 rounded font-medium text-sm"
-                        style={{ 
-                          background: colors.warning,
-                          color: colors.light
-                        }}
-                      >
-                        Simpan Perubahan
-                      </button>
-                    )}
-                    {isSaved && !editMode && (
-                      <button
-                        onClick={() => setEditMode(true)}
-                        className="w-full py-2 rounded font-medium text-sm flex items-center justify-center gap-2"
-                        style={{ 
-                          background: colors.warning,
-                          color: colors.light
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit Absensi
-                      </button>
-                    )}
-                    <button
-                      className="w-full py-2 rounded font-medium text-sm"
-                      style={{ 
-                        background: colors.dark,
-                        color: colors.light,
-                        border: `1px solid ${colors.accent}`
-                      }}
-                    >
-                      Cetak Laporan
-                    </button>
                   </div>
                 </div>
+
+                {isSaved ? (
+                  <div className="text-center py-8">
+                    <p style={{ color: colors.text }}>Absensi hari ini sudah dilakukan</p>
+                    {editMode && (
+                      <p className="text-xs mt-2" style={{ color: colors.warning }}>
+                        Mode edit aktif. Perubahan akan mengganti data sebelumnya.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
+                    {students.map((student) => (
+                      <div 
+                        key={student} 
+                        className="p-3 rounded-lg flex justify-between items-center"
+                        style={{ background: colors.dark }}
+                      >
+                        <p style={{ color: colors.text }} className="truncate">{student}</p>
+                        <select
+                          value={absensiHariIni[student] || 'Hadir'}
+                          onChange={(e) => setAbsensiHariIni({
+                            ...absensiHariIni,
+                            [student]: e.target.value
+                          })}
+                          className="px-2 py-1 rounded text-sm"
+                          style={{ 
+                            background: colors.background,
+                            color: colors.text,
+                            borderColor: colors.medium
+                          }}
+                        >
+                          {['Hadir', 'Sakit', 'Izin', 'Alpha'].map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Attendance History */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                  Histori Absensi Terakhir
-                </h3>
+              {/* Attendance History Card */}
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
+                  Histori Absensi
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Tanggal</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Status</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tanggal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {historiAbsensi.slice(0, 10).map((record, index) => (
+                      {historiAbsensi.map((record, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {new Date(record.date).toLocaleDateString('id-ID')}
                           </td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>{record.student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
                           <td className="py-3 px-4">
                             <StatusBadge status={record.status} />
                           </td>
@@ -713,36 +724,36 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Attendance Summary */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+              {/* Attendance Summary Card */}
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
                   Rekap Absensi
-                </h3>
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Hadir</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Sakit</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Izin</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Alpha</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Hadir</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Sakit</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Izin</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Alpha</th>
                       </tr>
                     </thead>
                     <tbody>
                       {students.map((student, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>{student}</td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {rekapAbsensi[student]?.Hadir || 0}
                           </td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {rekapAbsensi[student]?.Sakit || 0}
                           </td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {rekapAbsensi[student]?.Izin || 0}
                           </td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {rekapAbsensi[student]?.Alpha || 0}
                           </td>
                         </tr>
@@ -751,67 +762,72 @@ const Dashboard = () => {
                   </table>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Payment Tab */}
           {activeTab === 'uang kas' && (
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6" style={{ color: colors.light }}>
-                Data Uang Kas Kelas
-              </h2>
-              
+            <>
               {/* Kas Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-2xl" style={glassStyle}>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold" style={{ color: colors.light }}>
+                    <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
                       Total Kas
                     </h3>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke={colors.success}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-2xl font-bold mt-2" style={{ color: colors.light }}>
+                  <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
                     Rp{totalKas.toLocaleString('id-ID')}
                   </p>
                 </div>
                 
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
+                <div className="p-6 rounded-2xl" style={glassStyle}>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold" style={{ color: colors.light }}>
-                      Total Pengeluaran
+                    <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+                      Kas Masuk Hari Ini
                     </h3>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke={colors.danger}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke={colors.success}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
-                  <p className="text-2xl font-bold mt-2" style={{ color: colors.light }}>
-                    Rp{totalPengeluaran.toLocaleString('id-ID')}
+                  <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
+                    Rp{kasHariIni.toLocaleString('id-ID')}
                   </p>
                 </div>
                 
-                <div className="p-6 rounded-xl" style={{ background: colors.dark }}>
+                <div className="p-6 rounded-2xl" style={glassStyle}>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold" style={{ color: colors.light }}>
-                      Saldo Kas
+                    <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+                      Total Pengeluaran
                     </h3>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke={colors.accent}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" />
-                    </svg>
+                    <button
+                      onClick={() => setShowExpenseModal(true)}
+                      className="p-1 rounded-full"
+                      style={{ 
+                        background: colors.danger,
+                        color: colors.text
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
                   </div>
-                  <p className="text-2xl font-bold mt-2" style={{ color: colors.light }}>
-                    Rp{saldoKas.toLocaleString('id-ID')}
+                  <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
+                    Rp{totalPengeluaran.toLocaleString('id-ID')}
                   </p>
                 </div>
               </div>
 
               {/* Current Payments */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold" style={{ color: colors.light }}>
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold" style={{ color: colors.text }}>
                     Pembayaran Siswa
-                  </h3>
+                  </h2>
                   <div className="flex items-center gap-2">
                     <select
                       value={paymentWeek}
@@ -819,8 +835,8 @@ const Dashboard = () => {
                       className="px-3 py-1 rounded text-sm"
                       style={{ 
                         background: colors.dark,
-                        color: colors.light,
-                        borderColor: colors.accent
+                        color: colors.text,
+                        borderColor: colors.medium
                       }}
                     >
                       {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
@@ -841,20 +857,20 @@ const Dashboard = () => {
                         className="p-4 rounded-xl flex justify-between items-center"
                         style={{ 
                           background: colors.dark,
-                          border: `1px solid ${payment ? colors.accent : colors.danger}`
+                          border: `1px solid ${payment ? colors.medium : colors.danger}`
                         }}
                       >
                         <div>
-                          <p className="font-medium truncate" style={{ color: colors.light }}>
+                          <p className="font-medium truncate" style={{ color: colors.text }}>
                             {student.split(' ')[0]}
                           </p>
-                          <p className="text-xs" style={{ color: colors.light }}>
+                          <p className="text-xs" style={{ color: colors.text }}>
                             {paymentWeek}
                           </p>
                         </div>
                         {payment ? (
                           <div className="text-right">
-                            <p className="text-sm font-medium" style={{ color: colors.light }}>
+                            <p className="text-sm font-medium" style={{ color: colors.text }}>
                               Rp{payment.amount.toLocaleString('id-ID')}
                             </p>
                             <StatusBadge status="Sudah Bayar" />
@@ -864,8 +880,8 @@ const Dashboard = () => {
                             onClick={() => openPaymentModal(student)}
                             className="px-3 py-1 rounded text-sm"
                             style={{ 
-                              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                              color: colors.light
+                              background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                              color: colors.text
                             }}
                           >
                             Bayar
@@ -878,29 +894,29 @@ const Dashboard = () => {
               </div>
 
               {/* Payment History */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                  Histori Pembayaran Terakhir
-                </h3>
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
+                  Histori Pembayaran
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Tanggal</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Minggu</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nominal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tanggal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Minggu</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nominal</th>
                       </tr>
                     </thead>
                     <tbody>
                       {historiUangKas.slice(0, 10).map((record, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             {new Date(record.timestamp?.seconds * 1000).toLocaleDateString('id-ID')}
                           </td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>{record.student}</td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>{record.week}</td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.week}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             Rp{record.amount?.toLocaleString('id-ID')}
                           </td>
                         </tr>
@@ -911,30 +927,30 @@ const Dashboard = () => {
               </div>
 
               {/* Payment Summary */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
                   Rekap Uang Kas
-                </h3>
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Total Pembayaran</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Total Pembayaran</th>
                         {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.light }}>{week}</th>
+                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.text }}>{week}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {students.map((student, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>{student}</td>
-                          <td className="py-3 px-4" style={{ color: colors.light }}>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>
                             Rp{(rekapUangKas[student]?.total || 0).toLocaleString('id-ID')}
                           </td>
                           {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                            <td key={week} className="py-3 px-4" style={{ color: colors.light }}>
+                            <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
                               {rekapUangKas[student]?.weeks[week] ? (
                                 <span style={{ color: colors.success }}>
                                   Rp{rekapUangKas[student].weeks[week].toLocaleString('id-ID')}
@@ -950,130 +966,146 @@ const Dashboard = () => {
                   </table>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Cleaning Schedule Tab */}
           {activeTab === 'daftar piket' && (
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6" style={{ color: colors.light }}>
-                Daftar Piket Kelas
-              </h2>
-              
-              {/* Current Schedule */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                  Jadwal Piket Saat Ini
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => {
-                    const dayPiket = daftarPiket
-                      .filter(item => item.day === day)
-                      .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
-                      .slice(0, 5);
-                    
-                    const nonPiketStudents = students.filter(
-                      student => !dayPiket.some(p => p.name === student)
-                    );
-                    
-                    return (
-                      <div key={day} className="rounded-xl overflow-hidden" style={{ background: colors.dark }}>
-                        <div className="p-4" style={{ background: colors.primary }}>
-                          <h3 className="font-bold" style={{ color: colors.light }}>{day}</h3>
-                        </div>
-                        <div className="p-4">
-                          {dayPiket.map((item, index) => (
-                            <div 
-                              key={index} 
-                              className="flex items-center justify-between py-2 border-b" 
-                              style={{ borderColor: colors.medium }}
-                            >
-                              <div>
-                                <p style={{ color: colors.light }}>{item.name}</p>
-                                <p className="text-xs" style={{ color: colors.light }}>{item.week}</p>
-                              </div>
-                              <StatusBadge status={item.status} />
-                            </div>
-                          ))}
-                          
-                          {/* Non-piket students */}
-                          {dayPiket.length < 5 && (
-                            <div className="mt-4">
-                              <p className="text-xs mb-2" style={{ color: colors.light }}>
-                                Belum piket ({5 - dayPiket.length} orang):
-                              </p>
-                              <div className="flex flex-wrap gap-1">
-                                {nonPiketStudents.slice(0, 5).map((student, idx) => (
-                                  <span 
-                                    key={idx} 
-                                    className="px-2 py-1 rounded text-xs"
-                                    style={{ 
-                                      background: colors.danger,
-                                      color: colors.light
-                                    }}
-                                  >
-                                    {student.split(' ')[0]}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
+            <>
+              {/* Daily Piket Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map((day) => {
+                  const dayPiket = daftarPiket
+                    .filter(item => item.day === day && item.status === 'Sudah Piket')
+                    .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
+                    .slice(0, 5);
+                  
+                  const nonPiketStudents = students.filter(
+                    student => !dayPiket.some(p => p.name === student)
+                  );
+                  
+                  return (
+                    <div key={day} className="p-6 rounded-2xl" style={glassStyle}>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+                          Piket {day}
+                        </h3>
+                        <StatusBadge status={`${dayPiket.length}/5`} />
                       </div>
-                    );
-                  })}
-                </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        {dayPiket.map((item, index) => (
+                          <div 
+                            key={index} 
+                            className="flex justify-between items-center p-2 rounded"
+                            style={{ background: colors.dark }}
+                          >
+                            <p style={{ color: colors.text }}>{item.name}</p>
+                            <StatusBadge status={item.status} />
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-2 mb-3">
+                        <select
+                          value={selectedPiketStudent}
+                          onChange={(e) => setSelectedPiketStudent(e.target.value)}
+                          className="flex-1 px-2 py-1 rounded text-sm"
+                          style={{ 
+                            background: colors.dark,
+                            color: colors.text,
+                            borderColor: colors.medium
+                          }}
+                        >
+                          <option value="">Pilih Siswa</option>
+                          {nonPiketStudents.map((student) => (
+                            <option key={student} value={student}>{student}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => {
+                            if (selectedPiketStudent) {
+                              submitPiket(day, selectedPiketStudent);
+                              setSelectedPiketStudent('');
+                            }
+                          }}
+                          className="px-3 py-1 rounded text-sm"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                            color: colors.text
+                          }}
+                          disabled={!selectedPiketStudent}
+                        >
+                          Piket
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (selectedPiketStudent) {
+                              submitBelumPiket(day, selectedPiketStudent);
+                              setSelectedPiketStudent('');
+                            }
+                          }}
+                          className="px-3 py-1 rounded text-sm"
+                          style={{ 
+                            background: colors.danger,
+                            color: colors.text
+                          }}
+                          disabled={!selectedPiketStudent}
+                        >
+                          Belum
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Cleaning Schedule Summary */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.light }}>
-                  Rekap Piket
-                </h3>
+              {/* Piket Summary */}
+              <div className="p-6 rounded-2xl" style={glassStyle}>
+                <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
+                  Rekap Piket dan Denda
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Total Piket</th>
-                        {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.light }}>{week}</th>
-                        ))}
-                        <th className="py-3 px-4 text-left" style={{ color: colors.light }}>Denda</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Total Piket</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Denda</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status Denda</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {students.map((student, index) => {
                         const totalPiket = rekapPiket[student]?.total || 0;
                         const denda = Math.max(0, 20 - totalPiket) * 5000; // 5000 per missed piket
+                        const dendaStatus = rekapPiket[student]?.dendaStatus || 'Belum Bayar Denda';
                         
                         return (
                           <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                            <td className="py-3 px-4" style={{ color: colors.light }}>{student}</td>
-                            <td className="py-3 px-4" style={{ color: colors.light }}>
+                            <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                            <td className="py-3 px-4" style={{ color: colors.text }}>
                               {totalPiket}
                             </td>
-                            {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                              <td key={week} className="py-3 px-4" style={{ color: colors.light }}>
-                                {rekapPiket[student]?.weeks[week]?.Sudah || 0} / {rekapPiket[student]?.weeks[week]?.Belum || 0}
-                              </td>
-                            ))}
+                            <td className="py-3 px-4" style={{ color: colors.text }}>
+                              Rp{denda.toLocaleString('id-ID')}
+                            </td>
                             <td className="py-3 px-4">
-                              {denda > 0 ? (
-                                <div className="flex items-center gap-2">
-                                  <span style={{ color: colors.danger }}>Rp{denda.toLocaleString('id-ID')}</span>
-                                  <button 
-                                    className="px-2 py-1 rounded text-xs"
-                                    style={{ 
-                                      background: colors.danger,
-                                      color: colors.light
-                                    }}
-                                  >
-                                    Bayar
-                                  </button>
-                                </div>
-                              ) : (
-                                <StatusBadge status="Lunas" />
+                              <StatusBadge status={dendaStatus} />
+                            </td>
+                            <td className="py-3 px-4">
+                              {denda > 0 && dendaStatus === 'Belum Bayar Denda' && (
+                                <button
+                                  onClick={() => bayarDenda(student)}
+                                  className="px-3 py-1 rounded text-sm"
+                                  style={{ 
+                                    background: colors.danger,
+                                    color: colors.text
+                                  }}
+                                >
+                                  Bayar Denda
+                                </button>
                               )}
                             </td>
                           </tr>
@@ -1083,7 +1115,7 @@ const Dashboard = () => {
                   </table>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </main>
@@ -1104,12 +1136,12 @@ const Dashboard = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
             >
-              <h3 className="text-lg font-bold mb-4" style={{ color: colors.light }}>
+              <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>
                 Pembayaran Kas untuk {currentStudent}
               </h3>
               
               <div className="mb-4">
-                <label className="block text-sm mb-2" style={{ color: colors.light }}>
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
                   Minggu
                 </label>
                 <select
@@ -1118,8 +1150,8 @@ const Dashboard = () => {
                   className="w-full px-3 py-2 rounded"
                   style={{ 
                     background: colors.background,
-                    color: colors.light,
-                    borderColor: colors.accent
+                    color: colors.text,
+                    borderColor: colors.medium
                   }}
                 >
                   {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map((week) => (
@@ -1129,7 +1161,7 @@ const Dashboard = () => {
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm mb-2" style={{ color: colors.light }}>
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
                   Nominal Pembayaran
                 </label>
                 <input
@@ -1140,8 +1172,8 @@ const Dashboard = () => {
                   className="w-full px-3 py-2 rounded"
                   style={{ 
                     background: colors.background,
-                    color: colors.light,
-                    borderColor: colors.accent
+                    color: colors.text,
+                    borderColor: colors.medium
                   }}
                 />
                 <div className="grid grid-cols-5 gap-2 mt-2">
@@ -1152,8 +1184,8 @@ const Dashboard = () => {
                       className="px-2 py-1 rounded text-sm"
                       style={{ 
                         background: colors.background,
-                        color: colors.light,
-                        border: `1px solid ${colors.accent}`
+                        color: colors.text,
+                        border: `1px solid ${colors.medium}`
                       }}
                     >
                       Rp{amount.toLocaleString('id-ID')}
@@ -1168,7 +1200,7 @@ const Dashboard = () => {
                   className="px-4 py-2 rounded"
                   style={{ 
                     background: colors.danger,
-                    color: colors.light
+                    color: colors.text
                   }}
                 >
                   Batal
@@ -1177,11 +1209,94 @@ const Dashboard = () => {
                   onClick={submitUangKas}
                   className="px-4 py-2 rounded"
                   style={{ 
-                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                    color: colors.light
+                    background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                    color: colors.text
                   }}
                 >
                   Simpan Pembayaran
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expense Modal */}
+      <AnimatePresence>
+        {showExpenseModal && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="w-full max-w-md p-6 rounded-xl"
+              style={{ background: colors.dark }}
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+            >
+              <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>
+                Tambah Pengeluaran
+              </h3>
+              
+              <div className="mb-4">
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
+                  Nominal Pengeluaran
+                </label>
+                <input
+                  type="number"
+                  value={expenseAmount}
+                  onChange={(e) => setExpenseAmount(e.target.value)}
+                  placeholder="Masukkan nominal"
+                  className="w-full px-3 py-2 rounded"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
+                  Keterangan
+                </label>
+                <input
+                  type="text"
+                  value={expenseDescription}
+                  onChange={(e) => setExpenseDescription(e.target.value)}
+                  placeholder="Masukkan keterangan"
+                  className="w-full px-3 py-2 rounded"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowExpenseModal(false)}
+                  className="px-4 py-2 rounded"
+                  style={{ 
+                    background: colors.danger,
+                    color: colors.text
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={submitPengeluaran}
+                  className="px-4 py-2 rounded"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                    color: colors.text
+                  }}
+                >
+                  Simpan Pengeluaran
                 </button>
               </div>
             </motion.div>
