@@ -391,7 +391,7 @@ const Dashboard = () => {
         amount: amount,
         week: paymentWeek,
         timestamp: serverTimestamp()
-      };
+      });
       
       // Add to kas
       await setDoc(doc(kasRef, docId), {
