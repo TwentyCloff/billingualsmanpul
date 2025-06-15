@@ -482,7 +482,7 @@ const Dashboard = () => {
         student: student,
         status: 'Sudah Bayar Denda',
         timestamp: serverTimestamp()
-      };
+      });
       
       alert(`Denda piket untuk ${student} sudah dibayar`);
     } catch (error) {
