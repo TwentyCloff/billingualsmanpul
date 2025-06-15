@@ -351,7 +351,7 @@ const Dashboard = () => {
         amount: amount,
         week: paymentWeek,
         timestamp: serverTimestamp()
-      };
+      });
       
       // Add to kas
       await setDoc(doc(kasRef, docId), {
@@ -359,7 +359,7 @@ const Dashboard = () => {
         amount: amount,
         description: `Pembayaran kas dari ${currentStudent} (${paymentWeek})`,
         timestamp: serverTimestamp()
-      };
+      });
       
       setShowPaymentModal(false);
       alert('Pembayaran berhasil disimpan!');
