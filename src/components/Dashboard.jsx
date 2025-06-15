@@ -38,33 +38,33 @@ const glassStyle = {
   borderRadius: '16px'
 };
 
-// Student data
+// Student data with numbers
 const students = [
-  "Alicia Shofi Destiani",
-  "Dahlia Puspita Ghaniaty",
-  "Dara Veronika Tariggas",
-  "Fairuz Sahla Fallugah",
-  "Farid Ulya Firjatullah",
-  "Fathul Faigan Alfi",
-  "Fredy Gabriell Tanjaya",
-  "Kalinda Pradipa",
-  "Kania Permata Widra",
-  "Keisya Ramadhani Huuriyah",
-  "Kenzo Alvaro Bautista",
-  "Keysha Aulia",
-  "Kiran Adhya Narisha",
-  "Juliandika",
-  "Muhammad Fakhar",
-  "Nadine Rannu Gracia",
-  "Rahadatul Aisy Hadraini",
-  "Raden Mecca Puti A",
-  "Raisya Permata Intania W",
-  "Salsabiela Azzahra B",
-  "Sandi Gunawan",
-  "Shabrina Aqela",
-  "Syaira Parifasha",
-  "Syifa Azzahra Rifai",
-  "Utin Muzfira Amira Fenisa"
+  { name: "1. Alicia Shofi Destiani", number: 1 },
+  { name: "2. Dahlia Puspita Ghaniaty", number: 2 },
+  { name: "3. Dara Veronika Tariggas", number: 3 },
+  { name: "4. Fairuz Sahla Fallugah", number: 4 },
+  { name: "5. Farid Ulya Firjatullah", number: 5 },
+  { name: "6. Fathul Faigan Alfi", number: 6 },
+  { name: "7. Fredy Gabriell Tanjaya", number: 7 },
+  { name: "8. Kalinda Pradipa", number: 8 },
+  { name: "9. Kania Permata Widra", number: 9 },
+  { name: "10. Keisya Ramadhani Huuriyah", number: 10 },
+  { name: "11. Kenzo Alvaro Bautista", number: 11 },
+  { name: "12. Keysha Aulia", number: 12 },
+  { name: "13. Kiran Adhya Narisha", number: 13 },
+  { name: "14. Juliandika", number: 14 },
+  { name: "15. Muhammad Fakhar", number: 15 },
+  { name: "16. Nadine Rannu Gracia", number: 16 },
+  { name: "17. Rahadatul Aisy Hadraini", number: 17 },
+  { name: "18. Raden Mecca Puti A", number: 18 },
+  { name: "19. Raisya Permata Intania W", number: 19 },
+  { name: "20. Salsabiela Azzahra B", number: 20 },
+  { name: "21. Sandi Gunawan", number: 21 },
+  { name: "22. Shabrina Aqela", number: 22 },
+  { name: "23. Syaira Parifasha", number: 23 },
+  { name: "24. Syifa Azzahra Rifai", number: 24 },
+  { name: "25. Utin Muzfira Amira Fenisa", number: 25 }
 ];
 
 // Status colors
@@ -76,9 +76,7 @@ const statusColors = {
   'Sudah Bayar': colors.success,
   'Belum Bayar': colors.danger,
   'Sudah Piket': colors.success,
-  'Belum Piket': colors.danger,
-  'Sudah Bayar Denda': colors.success,
-  'Belum Bayar Denda': colors.danger
+  'Belum Piket': colors.danger
 };
 
 const Dashboard = () => {
@@ -93,21 +91,21 @@ const Dashboard = () => {
   const [historiUangKas, setHistoriUangKas] = useState([]);
   const [rekapUangKas, setRekapUangKas] = useState({});
   const [daftarPiket, setDaftarPiket] = useState([]);
-  const [rekapPiket, setRekapPiket] = useState({});
   const [isSaved, setIsSaved] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showStudentModal, setShowStudentModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentWeek, setPaymentWeek] = useState('Minggu 1');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDescription, setExpenseDescription] = useState('');
   const [totalKas, setTotalKas] = useState(0);
-  const [totalPengeluaran, setTotalPengeluaran] = useState(0);
   const [kasHariIni, setKasHariIni] = useState(0);
+  const [totalPengeluaran, setTotalPengeluaran] = useState(0);
   const [selectedPiketDay, setSelectedPiketDay] = useState('Senin');
-  const [selectedPiketStudent, setSelectedPiketStudent] = useState('');
+  const [searchStudent, setSearchStudent] = useState('');
 
   // Firebase collections
   const absensiRef = collection(db, 'absensi');
@@ -116,7 +114,17 @@ const Dashboard = () => {
   const historiAbsensiRef = collection(db, 'historiAbsensi');
   const historiUangKasRef = collection(db, 'historiUangKas');
   const kasRef = collection(db, 'kas');
-  const dendaPiketRef = collection(db, 'dendaPiket');
+
+  // Format currency
+  const formatCurrency = (value) => {
+    if (!value) return 'Rp0';
+    return 'Rp' + parseInt(value).toLocaleString('id-ID');
+  };
+
+  // Parse currency input
+  const parseCurrency = (value) => {
+    return parseInt(value.replace(/\D/g, '')) || 0;
+  };
 
   // Auth state listener
   useEffect(() => {
@@ -140,7 +148,7 @@ const Dashboard = () => {
         // Initialize today's attendance
         const todayAbsensi = {};
         students.forEach(student => {
-          todayAbsensi[student] = 'Hadir';
+          todayAbsensi[student.name] = 'Hadir';
         });
         setAbsensiHariIni(todayAbsensi);
         setIsSaved(false);
@@ -157,7 +165,7 @@ const Dashboard = () => {
       // Initialize payments
       const uangKasData = {};
       students.forEach(student => {
-        uangKasData[student] = {
+        uangKasData[student.name] = {
           status: 'Belum Bayar',
           amount: 0,
           week: 'Minggu 1'
@@ -212,6 +220,7 @@ const Dashboard = () => {
           }
         } else {
           pengeluaran += data.amount;
+          total -= data.amount;
         }
       });
       
@@ -220,29 +229,11 @@ const Dashboard = () => {
       setKasHariIni(todayIncome);
     });
 
-    // Load denda piket
-    const unsubDenda = onSnapshot(dendaPiketRef, (snapshot) => {
-      const dendaData = {};
-      snapshot.docs.forEach(doc => {
-        dendaData[doc.data().student] = doc.data().status;
-      });
-      
-      setRekapPiket(prev => {
-        const updated = {...prev};
-        students.forEach(student => {
-          if (!updated[student]) updated[student] = {};
-          updated[student].dendaStatus = dendaData[student] || 'Belum Bayar Denda';
-        });
-        return updated;
-      });
-    });
-
     return () => {
       unsubHistoriAbsensi();
       unsubHistoriUangKas();
       unsubPiket();
       unsubKas();
-      unsubDenda();
     };
   }, [user]);
 
@@ -250,7 +241,7 @@ const Dashboard = () => {
   useEffect(() => {
     const summary = {};
     students.forEach(student => {
-      summary[student] = {
+      summary[student.name] = {
         Hadir: 0,
         Sakit: 0,
         Izin: 0,
@@ -271,7 +262,7 @@ const Dashboard = () => {
   useEffect(() => {
     const summary = {};
     students.forEach(student => {
-      summary[student] = {
+      summary[student.name] = {
         total: 0,
         weeks: {}
       };
@@ -290,44 +281,17 @@ const Dashboard = () => {
     setRekapUangKas(summary);
   }, [historiUangKas]);
 
-  // Calculate cleaning schedule summary
-  useEffect(() => {
-    const summary = {};
-    students.forEach(student => {
-      summary[student] = {
-        total: 0,
-        weeks: {},
-        dendaStatus: 'Belum Bayar Denda'
-      };
-    });
-
-    daftarPiket.forEach(record => {
-      if (summary[record.name]) {
-        if (!summary[record.name].weeks[record.week]) {
-          summary[record.name].weeks[record.week] = {
-            Sudah: 0,
-            Belum: 0
-          };
-        }
-        summary[record.name].weeks[record.week][record.status === 'Sudah Piket' ? 'Sudah' : 'Belum']++;
-        summary[record.name].total++;
-      }
-    });
-
-    setRekapPiket(summary);
-  }, [daftarPiket]);
-
   // Handle attendance submission
   const submitAbsensi = async () => {
     try {
       const batch = [];
       
       students.forEach(student => {
-        const docRef = doc(historiAbsensiRef, `${currentDate}_${student}`);
+        const docRef = doc(historiAbsensiRef, `${currentDate}_${student.name}`);
         batch.push(
           setDoc(docRef, {
-            student,
-            status: absensiHariIni[student] || 'Hadir',
+            student: student.name,
+            status: absensiHariIni[student.name] || 'Hadir',
             date: currentDate,
             timestamp: serverTimestamp()
           })
@@ -367,22 +331,27 @@ const Dashboard = () => {
   };
 
   // Open payment modal
-  const openPaymentModal = (student) => {
+  const openPaymentModal = (student, week) => {
     setCurrentStudent(student);
     setPaymentAmount('');
-    setPaymentWeek(uangKas[student]?.week || 'Minggu 1');
+    setPaymentWeek(week);
     setShowPaymentModal(true);
   };
 
   // Handle payment submission
   const submitUangKas = async () => {
     try {
-      if (!paymentAmount || isNaN(paymentAmount)) {
+      if (!paymentAmount) {
         alert('Masukkan nominal yang valid');
         return;
       }
       
-      const amount = parseInt(paymentAmount);
+      const amount = parseCurrency(paymentAmount);
+      if (amount <= 0) {
+        alert('Nominal harus lebih dari 0');
+        return;
+      }
+      
       const docId = `${Date.now()}_${currentStudent}`;
       
       await setDoc(doc(historiUangKasRef, docId), {
@@ -391,7 +360,7 @@ const Dashboard = () => {
         amount: amount,
         week: paymentWeek,
         timestamp: serverTimestamp()
-      });
+      };
       
       // Add to kas
       await setDoc(doc(kasRef, docId), {
@@ -399,7 +368,7 @@ const Dashboard = () => {
         amount: amount,
         description: `Pembayaran kas dari ${currentStudent} (${paymentWeek})`,
         timestamp: serverTimestamp()
-      });
+      };
       
       setShowPaymentModal(false);
       alert('Pembayaran berhasil disimpan!');
@@ -412,12 +381,17 @@ const Dashboard = () => {
   // Handle expense submission
   const submitPengeluaran = async () => {
     try {
-      if (!expenseAmount || isNaN(expenseAmount) || !expenseDescription) {
+      if (!expenseAmount || !expenseDescription) {
         alert('Masukkan nominal dan keterangan yang valid');
         return;
       }
       
-      const amount = parseInt(expenseAmount);
+      const amount = parseCurrency(expenseAmount);
+      if (amount <= 0) {
+        alert('Nominal harus lebih dari 0');
+        return;
+      }
+      
       const docId = `expense_${Date.now()}`;
       
       await setDoc(doc(kasRef, docId), {
@@ -425,7 +399,7 @@ const Dashboard = () => {
         amount: amount,
         description: expenseDescription,
         timestamp: serverTimestamp()
-      });
+      };
       
       setShowExpenseModal(false);
       setExpenseAmount('');
@@ -434,25 +408,6 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error saving expense:", error);
       alert('Gagal mencatat pengeluaran');
-    }
-  };
-
-  // Handle piket submission
-  const submitPiket = async (day, student) => {
-    try {
-      const docId = `${day}_${student}`;
-      
-      await setDoc(doc(piketRef, docId), {
-        name: student,
-        day: day,
-        status: 'Sudah Piket',
-        timestamp: serverTimestamp()
-      });
-      
-      alert(`${student} sudah piket pada hari ${day}`);
-    } catch (error) {
-      console.error("Error saving piket:", error);
-      alert('Gagal menyimpan data piket');
     }
   };
 
@@ -466,28 +421,14 @@ const Dashboard = () => {
         day: day,
         status: 'Belum Piket',
         timestamp: serverTimestamp()
-      });
+      };
       
+      setShowStudentModal(false);
+      setSearchStudent('');
       alert(`${student} belum piket pada hari ${day}`);
     } catch (error) {
       console.error("Error saving belum piket:", error);
       alert('Gagal menyimpan data belum piket');
-    }
-  };
-
-  // Handle bayar denda
-  const bayarDenda = async (student) => {
-    try {
-      await setDoc(doc(dendaPiketRef, student), {
-        student: student,
-        status: 'Sudah Bayar Denda',
-        timestamp: serverTimestamp()
-      });
-      
-      alert(`Denda piket untuk ${student} sudah dibayar`);
-    } catch (error) {
-      console.error("Error saving denda:", error);
-      alert('Gagal menyimpan pembayaran denda');
     }
   };
 
@@ -665,16 +606,16 @@ const Dashboard = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
                     {students.map((student) => (
                       <div 
-                        key={student} 
+                        key={student.name} 
                         className="p-3 rounded-lg flex justify-between items-center"
                         style={{ background: colors.dark }}
                       >
-                        <p style={{ color: colors.text }} className="truncate">{student}</p>
+                        <p style={{ color: colors.text }}>{student.name}</p>
                         <select
-                          value={absensiHariIni[student] || 'Hadir'}
+                          value={absensiHariIni[student.name] || 'Hadir'}
                           onChange={(e) => setAbsensiHariIni({
                             ...absensiHariIni,
-                            [student]: e.target.value
+                            [student.name]: e.target.value
                           })}
                           className="px-2 py-1 rounded text-sm"
                           style={{ 
@@ -696,32 +637,40 @@ const Dashboard = () => {
               {/* Attendance History Card */}
               <div className="p-6 rounded-2xl" style={glassStyle}>
                 <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
-                  Histori Absensi
+                  Histori Absensi ({formatDate(currentDate)})
                 </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr style={{ borderBottomColor: colors.dark }}>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tanggal</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historiAbsensi.map((record, index) => (
-                        <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.text }}>
-                            {new Date(record.date).toLocaleDateString('id-ID')}
-                          </td>
-                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
-                          <td className="py-3 px-4">
-                            <StatusBadge status={record.status} />
-                          </td>
+                {historiAbsensi.filter(record => record.date === currentDate).length === 0 ? (
+                  <div className="text-center py-8" style={{ color: colors.text }}>
+                    Belum Ada Histori Absensi Hari Ini
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ borderBottomColor: colors.dark }}>
+                          <th className="py-3 px-4 text-left" style={{ color: colors.text }}>No</th>
+                          <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
+                          <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {historiAbsensi
+                          .filter(record => record.date === currentDate)
+                          .map((record, index) => (
+                            <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                              <td className="py-3 px-4" style={{ color: colors.text }}>
+                                {index + 1}
+                              </td>
+                              <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
+                              <td className="py-3 px-4">
+                                <StatusBadge status={record.status} />
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               {/* Attendance Summary Card */}
@@ -733,6 +682,7 @@ const Dashboard = () => {
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>No</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Hadir</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Sakit</th>
@@ -743,18 +693,19 @@ const Dashboard = () => {
                     <tbody>
                       {students.map((student, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student.number}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student.name}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            {rekapAbsensi[student]?.Hadir || 0}
+                            {rekapAbsensi[student.name]?.Hadir || 0}
                           </td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            {rekapAbsensi[student]?.Sakit || 0}
+                            {rekapAbsensi[student.name]?.Sakit || 0}
                           </td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            {rekapAbsensi[student]?.Izin || 0}
+                            {rekapAbsensi[student.name]?.Izin || 0}
                           </td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            {rekapAbsensi[student]?.Alpha || 0}
+                            {rekapAbsensi[student.name]?.Alpha || 0}
                           </td>
                         </tr>
                       ))}
@@ -780,7 +731,7 @@ const Dashboard = () => {
                     </svg>
                   </div>
                   <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
-                    Rp{totalKas.toLocaleString('id-ID')}
+                    {formatCurrency(totalKas)}
                   </p>
                 </div>
                 
@@ -794,7 +745,7 @@ const Dashboard = () => {
                     </svg>
                   </div>
                   <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
-                    Rp{kasHariIni.toLocaleString('id-ID')}
+                    {formatCurrency(kasHariIni)}
                   </p>
                 </div>
                 
@@ -817,7 +768,7 @@ const Dashboard = () => {
                     </button>
                   </div>
                   <p className="text-2xl font-bold mt-2" style={{ color: colors.text }}>
-                    Rp{totalPengeluaran.toLocaleString('id-ID')}
+                    {formatCurrency(totalPengeluaran)}
                   </p>
                 </div>
               </div>
@@ -848,7 +799,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {students.map((student, index) => {
                     const payment = historiUangKas.find(
-                      p => p.student === student && p.week === paymentWeek
+                      p => p.student === student.name && p.week === paymentWeek
                     );
                     
                     return (
@@ -862,7 +813,7 @@ const Dashboard = () => {
                       >
                         <div>
                           <p className="font-medium truncate" style={{ color: colors.text }}>
-                            {student.split(' ')[0]}
+                            {student.name.split(' ')[0]}
                           </p>
                           <p className="text-xs" style={{ color: colors.text }}>
                             {paymentWeek}
@@ -871,13 +822,13 @@ const Dashboard = () => {
                         {payment ? (
                           <div className="text-right">
                             <p className="text-sm font-medium" style={{ color: colors.text }}>
-                              Rp{payment.amount.toLocaleString('id-ID')}
+                              {formatCurrency(payment.amount)}
                             </p>
                             <StatusBadge status="Sudah Bayar" />
                           </div>
                         ) : (
                           <button
-                            onClick={() => openPaymentModal(student)}
+                            onClick={() => openPaymentModal(student.name, paymentWeek)}
                             className="px-3 py-1 rounded text-sm"
                             style={{ 
                               background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
@@ -917,7 +868,7 @@ const Dashboard = () => {
                           <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>{record.week}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            Rp{record.amount?.toLocaleString('id-ID')}
+                            {formatCurrency(record.amount)}
                           </td>
                         </tr>
                       ))}
@@ -935,6 +886,7 @@ const Dashboard = () => {
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>No</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Total Pembayaran</th>
                         {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
@@ -945,15 +897,16 @@ const Dashboard = () => {
                     <tbody>
                       {students.map((student, index) => (
                         <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                          <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student.number}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{student.name}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
-                            Rp{(rekapUangKas[student]?.total || 0).toLocaleString('id-ID')}
+                            {formatCurrency(rekapUangKas[student.name]?.total || 0)}
                           </td>
                           {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
                             <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
-                              {rekapUangKas[student]?.weeks[week] ? (
+                              {rekapUangKas[student.name]?.weeks[week] ? (
                                 <span style={{ color: colors.success }}>
-                                  Rp{rekapUangKas[student].weeks[week].toLocaleString('id-ID')}
+                                  {formatCurrency(rekapUangKas[student.name].weeks[week])}
                                 </span>
                               ) : (
                                 <span style={{ color: colors.danger }}>Belum Bayar</span>
@@ -980,137 +933,78 @@ const Dashboard = () => {
                     .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0))
                     .slice(0, 5);
                   
-                  const nonPiketStudents = students.filter(
-                    student => !dayPiket.some(p => p.name === student)
-                  );
-                  
                   return (
                     <div key={day} className="p-6 rounded-2xl" style={glassStyle}>
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
                           Piket {day}
                         </h3>
-                        <StatusBadge status={`${dayPiket.length}/5`} />
                       </div>
                       
                       <div className="space-y-3 mb-4">
                         {dayPiket.map((item, index) => (
                           <div 
                             key={index} 
-                            className="flex justify-between items-center p-2 rounded"
-                            style={{ background: colors.dark }}
+                            className="p-2 rounded"
+                            style={{ 
+                              background: colors.dark,
+                              border: `1px solid ${colors.medium}`
+                            }}
                           >
                             <p style={{ color: colors.text }}>{item.name}</p>
-                            <StatusBadge status={item.status} />
                           </div>
                         ))}
                       </div>
                       
-                      <div className="flex gap-2 mb-3">
-                        <select
-                          value={selectedPiketStudent}
-                          onChange={(e) => setSelectedPiketStudent(e.target.value)}
-                          className="flex-1 px-2 py-1 rounded text-sm"
-                          style={{ 
-                            background: colors.dark,
-                            color: colors.text,
-                            borderColor: colors.medium
-                          }}
-                        >
-                          <option value="">Pilih Siswa</option>
-                          {nonPiketStudents.map((student) => (
-                            <option key={student} value={student}>{student}</option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => {
-                            if (selectedPiketStudent) {
-                              submitPiket(day, selectedPiketStudent);
-                              setSelectedPiketStudent('');
-                            }
-                          }}
-                          className="px-3 py-1 rounded text-sm"
-                          style={{ 
-                            background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
-                            color: colors.text
-                          }}
-                          disabled={!selectedPiketStudent}
-                        >
-                          Piket
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (selectedPiketStudent) {
-                              submitBelumPiket(day, selectedPiketStudent);
-                              setSelectedPiketStudent('');
-                            }
-                          }}
-                          className="px-3 py-1 rounded text-sm"
-                          style={{ 
-                            background: colors.danger,
-                            color: colors.text
-                          }}
-                          disabled={!selectedPiketStudent}
-                        >
-                          Belum
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedPiketDay(day);
+                          setShowStudentModal(true);
+                        }}
+                        className="w-full py-2 rounded font-medium"
+                        style={{ 
+                          background: colors.danger,
+                          color: colors.text
+                        }}
+                      >
+                        + Tambah Belum Piket
+                      </button>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Piket Summary */}
+              {/* Piket History */}
               <div className="p-6 rounded-2xl" style={glassStyle}>
                 <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
-                  Rekap Piket dan Denda
+                  Histori Belum Piket
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ borderBottomColor: colors.dark }}>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tanggal</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Hari</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Total Piket</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Denda</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status Denda</th>
-                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Aksi</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {students.map((student, index) => {
-                        const totalPiket = rekapPiket[student]?.total || 0;
-                        const denda = Math.max(0, 20 - totalPiket) * 5000; // 5000 per missed piket
-                        const dendaStatus = rekapPiket[student]?.dendaStatus || 'Belum Bayar Denda';
-                        
-                        return (
+                      {daftarPiket
+                        .filter(item => item.status === 'Belum Piket')
+                        .sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0))
+                        .map((item, index) => (
                           <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                            <td className="py-3 px-4" style={{ color: colors.text }}>{student}</td>
                             <td className="py-3 px-4" style={{ color: colors.text }}>
-                              {totalPiket}
+                              {new Date(item.timestamp?.seconds * 1000).toLocaleDateString('id-ID')}
                             </td>
-                            <td className="py-3 px-4" style={{ color: colors.text }}>
-                              Rp{denda.toLocaleString('id-ID')}
-                            </td>
+                            <td className="py-3 px-4" style={{ color: colors.text }}>{item.day}</td>
+                            <td className="py-3 px-4" style={{ color: colors.text }}>{item.name}</td>
                             <td className="py-3 px-4">
-                              <StatusBadge status={dendaStatus} />
-                            </td>
-                            <td className="py-3 px-4">
-                              {denda > 0 && dendaStatus === 'Belum Bayar Denda' && (
-                                <button
-                                  onClick={() => bayarDenda(student)}
-                                  className="px-3 py-1 rounded text-sm"
-                                  style={{ 
-                                    background: colors.danger,
-                                    color: colors.text
-                                  }}
-                                >
-                                  Bayar Denda
-                                </button>
-                              )}
+                              <StatusBadge status={item.status} />
                             </td>
                           </tr>
-                        );
-                      })}
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -1165,10 +1059,19 @@ const Dashboard = () => {
                   Nominal Pembayaran
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  placeholder="Masukkan nominal"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^Rp\d{0,3}(\.\d{3})*$/.test(value.replace(/Rp/g, ''))) {
+                      setPaymentAmount(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const num = parseCurrency(e.target.value);
+                    setPaymentAmount(formatCurrency(num));
+                  }}
+                  placeholder="Rp0"
                   className="w-full px-3 py-2 rounded"
                   style={{ 
                     background: colors.background,
@@ -1177,10 +1080,10 @@ const Dashboard = () => {
                   }}
                 />
                 <div className="grid grid-cols-5 gap-2 mt-2">
-                  {[1000, 2000, 3000, 5000, 10000].map((amount) => (
+                  {[10000, 20000, 30000, 50000, 100000].map((amount) => (
                     <button
                       key={amount}
-                      onClick={() => setPaymentAmount(amount)}
+                      onClick={() => setPaymentAmount(formatCurrency(amount))}
                       className="px-2 py-1 rounded text-sm"
                       style={{ 
                         background: colors.background,
@@ -1188,7 +1091,7 @@ const Dashboard = () => {
                         border: `1px solid ${colors.medium}`
                       }}
                     >
-                      Rp{amount.toLocaleString('id-ID')}
+                      {formatCurrency(amount)}
                     </button>
                   ))}
                 </div>
@@ -1246,10 +1149,19 @@ const Dashboard = () => {
                   Nominal Pengeluaran
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   value={expenseAmount}
-                  onChange={(e) => setExpenseAmount(e.target.value)}
-                  placeholder="Masukkan nominal"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^Rp\d{0,3}(\.\d{3})*$/.test(value.replace(/Rp/g, ''))) {
+                      setExpenseAmount(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const num = parseCurrency(e.target.value);
+                    setExpenseAmount(formatCurrency(num));
+                  }}
+                  placeholder="Rp0"
                   className="w-full px-3 py-2 rounded"
                   style={{ 
                     background: colors.background,
@@ -1297,6 +1209,90 @@ const Dashboard = () => {
                   }}
                 >
                   Simpan Pengeluaran
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Student Selection Modal */}
+      <AnimatePresence>
+        {showStudentModal && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="w-full max-w-md p-6 rounded-xl"
+              style={{ background: colors.dark }}
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+            >
+              <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>
+                Pilih Siswa untuk Hari {selectedPiketDay}
+              </h3>
+              
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={searchStudent}
+                  onChange={(e) => setSearchStudent(e.target.value)}
+                  placeholder="Cari nama siswa..."
+                  className="w-full px-3 py-2 rounded mb-2"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                />
+                
+                <div className="max-h-60 overflow-y-auto">
+                  {students
+                    .filter(student => 
+                      student.name.toLowerCase().includes(searchStudent.toLowerCase())
+                    )
+                    .map((student) => (
+                      <div 
+                        key={student.name}
+                        className="p-2 rounded mb-1 flex justify-between items-center"
+                        style={{ 
+                          background: colors.dark,
+                          border: `1px solid ${colors.medium}`
+                        }}
+                      >
+                        <span style={{ color: colors.text }}>{student.name}</span>
+                        <button
+                          onClick={() => submitBelumPiket(selectedPiketDay, student.name)}
+                          className="px-3 py-1 rounded text-sm"
+                          style={{ 
+                            background: colors.danger,
+                            color: colors.text
+                          }}
+                        >
+                          Belum Piket
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowStudentModal(false);
+                    setSearchStudent('');
+                  }}
+                  className="px-4 py-2 rounded"
+                  style={{ 
+                    background: colors.danger,
+                    color: colors.text
+                  }}
+                >
+                  Tutup
                 </button>
               </div>
             </motion.div>
