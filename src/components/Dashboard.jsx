@@ -86,16 +86,15 @@ const subjects = [
   "PJOK"
 ];
 
-// Generate random schedule
+// Generate schedule (not random anymore)
 const generateSchedule = () => {
   const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
   const schedule = {};
   
   days.forEach(day => {
-    const daySubjects = [...subjects].sort(() => 0.5 - Math.random()).slice(0, 5);
-    schedule[day] = daySubjects.map(subject => ({
-      subject,
-      time: `${Math.floor(Math.random() * 4) + 7}:00 - ${Math.floor(Math.random() * 4) + 8}:30`
+    schedule[day] = Array(5).fill().map((_, i) => ({
+      subject: '',
+      time: ''
     }));
   });
   
@@ -116,6 +115,45 @@ const statusColors = {
   'Belum Piket': colors.danger
 };
 
+// Piket data (editable in code)
+const initialPiketData = {
+  Senin: [
+    "Alicia Shofi Destiani",
+    "Dahlia Puspita Ghaniaty",
+    "Dara Veronika Tariggas",
+    "Fairuz Sahla Fallugah",
+    "Farid Ulya Firjatullah"
+  ],
+  Selasa: [
+    "Fathul Faigan Alfi",
+    "Fredy Gabriell Tanjaya",
+    "Kalinda Pradipa",
+    "Kania Permata Widra",
+    "Keisya Ramadhani Huuriyah"
+  ],
+  Rabu: [
+    "Kenzo Alvaro Bautista",
+    "Keysha Aulia",
+    "Kiran Adhya Narisha",
+    "Juliandika",
+    "Muhammad Fakhar"
+  ],
+  Kamis: [
+    "Nadine Rannu Gracia",
+    "Rahadatul Aisy Hadraini",
+    "Raden Mecca Puti A",
+    "Raisya Permata Intania W",
+    "Salsabiela Azzahra B"
+  ],
+  Jumat: [
+    "Sandi Gunawan",
+    "Shabrina Aqela",
+    "Syaira Parifasha",
+    "Syifa Azzahra Rifai",
+    "Utin Muzfira Amira Fenisa"
+  ]
+};
+
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -127,7 +165,7 @@ const Dashboard = () => {
   const [uangKas, setUangKas] = useState({});
   const [historiUangKas, setHistoriUangKas] = useState([]);
   const [rekapUangKas, setRekapUangKas] = useState({});
-  const [daftarPiket, setDaftarPiket] = useState([]);
+  const [daftarPiket, setDaftarPiket] = useState(initialPiketData);
   const [isSaved, setIsSaved] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -147,6 +185,8 @@ const Dashboard = () => {
   const [searchStudent, setSearchStudent] = useState('');
   const [searchPiketResult, setSearchPiketResult] = useState(null);
   const [showPiketSearchModal, setShowPiketSearchModal] = useState(false);
+  const [schedule, setSchedule] = useState(scheduleData);
+  const [editingSchedule, setEditingSchedule] = useState(null);
 
   // Firebase collections
   const absensiRef = collection(db, 'absensi');
@@ -155,6 +195,7 @@ const Dashboard = () => {
   const historiAbsensiRef = collection(db, 'historiAbsensi');
   const historiUangKasRef = collection(db, 'historiUangKas');
   const kasRef = collection(db, 'kas');
+  const scheduleRef = collection(db, 'schedule');
 
   // Format currency
   const formatCurrency = (value) => {
@@ -222,18 +263,29 @@ const Dashboard = () => {
       });
       setUangKas(uangKasData);
 
-      // Initialize piket
-      const initialPiket = {};
-      const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-      days.forEach(day => {
-        initialPiket[day] = [];
-        // Randomly select 5 students for each day
-        const shuffled = [...students].sort(() => 0.5 - Math.random());
-        for (let i = 0; i < 5; i++) {
-          initialPiket[day].push(shuffled[i].name);
-        }
-      });
-      setDaftarPiket(initialPiket);
+      // Load piket from Firebase or use initial data
+      const piketQuery = query(piketRef);
+      const piketSnapshot = await getDocs(piketQuery);
+      if (!piketSnapshot.empty) {
+        const piketData = {};
+        piketSnapshot.forEach(doc => {
+          piketData[doc.id] = doc.data().students;
+        });
+        setDaftarPiket(piketData);
+      } else {
+        setDaftarPiket(initialPiketData);
+      }
+
+      // Load schedule from Firebase
+      const scheduleQuery = query(scheduleRef);
+      const scheduleSnapshot = await getDocs(scheduleQuery);
+      if (!scheduleSnapshot.empty) {
+        const scheduleData = {};
+        scheduleSnapshot.forEach(doc => {
+          scheduleData[doc.id] = doc.data().subjects;
+        });
+        setSchedule(scheduleData);
+      }
     };
 
     initializeData();
@@ -286,10 +338,30 @@ const Dashboard = () => {
       setKasHariIni(todayIncome);
     });
 
+    // Load piket data
+    const unsubPiket = onSnapshot(piketRef, (snapshot) => {
+      const piketData = {};
+      snapshot.docs.forEach(doc => {
+        piketData[doc.id] = doc.data().students;
+      });
+      setDaftarPiket(piketData);
+    });
+
+    // Load schedule data
+    const unsubSchedule = onSnapshot(scheduleRef, (snapshot) => {
+      const scheduleData = {};
+      snapshot.docs.forEach(doc => {
+        scheduleData[doc.id] = doc.data().subjects;
+      });
+      setSchedule(scheduleData);
+    });
+
     return () => {
       unsubHistoriAbsensi();
       unsubHistoriUangKas();
       unsubKas();
+      unsubPiket();
+      unsubSchedule();
     };
   }, [user]);
 
@@ -389,6 +461,45 @@ const Dashboard = () => {
     }
   };
 
+  // Save piket to Firebase
+  const savePiket = async () => {
+    try {
+      const batch = [];
+      Object.entries(daftarPiket).forEach(([day, students]) => {
+        const docRef = doc(piketRef, day);
+        batch.push(setDoc(docRef, { students }));
+      });
+      
+      await Promise.all(batch);
+      setSuccessMessage('Daftar piket berhasil disimpan!');
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error saving piket:", error);
+      setSuccessMessage('Gagal menyimpan daftar piket');
+      setShowSuccessModal(true);
+    }
+  };
+
+  // Save schedule to Firebase
+  const saveSchedule = async () => {
+    try {
+      const batch = [];
+      Object.entries(schedule).forEach(([day, subjects]) => {
+        const docRef = doc(scheduleRef, day);
+        batch.push(setDoc(docRef, { subjects }));
+      });
+      
+      await Promise.all(batch);
+      setSuccessMessage('Jadwal berhasil disimpan!');
+      setShowSuccessModal(true);
+      setEditingSchedule(null);
+    } catch (error) {
+      console.error("Error saving schedule:", error);
+      setSuccessMessage('Gagal menyimpan jadwal');
+      setShowSuccessModal(true);
+    }
+  };
+
   // Open payment modal
   const openPaymentModal = (student, week) => {
     setCurrentStudent(student);
@@ -480,6 +591,8 @@ const Dashboard = () => {
 
   // Search piket
   const searchPiket = (name) => {
+    if (!name) return;
+    
     const result = {};
     const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
     
@@ -489,14 +602,26 @@ const Dashboard = () => {
       }
     });
     
-    setSearchPiketResult({ name, days: result });
-    setShowPiketSearchModal(true);
+    if (Object.keys(result).length > 0) {
+      setSearchPiketResult({ name, days: result });
+      setShowPiketSearchModal(true);
+    } else {
+      setSuccessMessage('Nama tidak ditemukan di daftar piket');
+      setShowSuccessModal(true);
+    }
   };
 
   // Format date
   const formatDate = (dateString) => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('id-ID', options);
+  };
+
+  // Handle schedule edit
+  const handleScheduleEdit = (day, index, field, value) => {
+    const updatedSchedule = { ...schedule };
+    updatedSchedule[day][index][field] = value;
+    setSchedule(updatedSchedule);
   };
 
   // Status badge component
@@ -717,17 +842,25 @@ const Dashboard = () => {
                       <tbody>
                         {historiAbsensi
                           .filter(record => record.date === currentDate)
-                          .map((record, index) => (
-                            <tr key={index} style={{ borderBottomColor: colors.dark }}>
-                              <td className="py-3 px-4" style={{ color: colors.text }}>
-                                {index + 1}
-                              </td>
-                              <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
-                              <td className="py-3 px-4">
-                                <StatusBadge status={record.status} />
-                              </td>
-                            </tr>
-                          ))}
+                          .sort((a, b) => {
+                            const studentA = students.find(s => s.name === a.student);
+                            const studentB = students.find(s => s.name === b.student);
+                            return (studentA?.number || 0) - (studentB?.number || 0);
+                          })
+                          .map((record, index) => {
+                            const student = students.find(s => s.name === record.student);
+                            return (
+                              <tr key={index} style={{ borderBottomColor: colors.dark }}>
+                                <td className="py-3 px-4" style={{ color: colors.text }}>
+                                  {student?.number || index + 1}
+                                </td>
+                                <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
+                                <td className="py-3 px-4">
+                                  <StatusBadge status={record.status} />
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
@@ -1011,6 +1144,16 @@ const Dashboard = () => {
                   >
                     Cari
                   </button>
+                  <button
+                    onClick={savePiket}
+                    className="px-4 py-2 rounded font-medium"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${colors.success}, ${colors.dark})`,
+                      color: colors.text
+                    }}
+                  >
+                    Simpan Piket
+                  </button>
                 </div>
               </div>
 
@@ -1025,7 +1168,7 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="space-y-3">
-                      {daftarPiket[day]?.slice(0, 5).map((name, index) => (
+                      {daftarPiket[day]?.map((name, index) => (
                         <div 
                           key={index} 
                           className="p-3 rounded"
@@ -1047,12 +1190,51 @@ const Dashboard = () => {
           {/* Schedule Tab */}
           {activeTab === 'jadwal' && (
             <div className="p-6 rounded-2xl" style={glassStyle}>
-              <h2 className="text-xl font-bold mb-6" style={{ color: colors.text }}>
-                Jadwal Pelajaran
-              </h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold" style={{ color: colors.text }}>
+                  Jadwal Pelajaran
+                </h2>
+                <div className="flex gap-2">
+                  {editingSchedule ? (
+                    <>
+                      <button
+                        onClick={() => setEditingSchedule(null)}
+                        className="px-4 py-2 rounded font-medium"
+                        style={{ 
+                          background: colors.danger,
+                          color: colors.text
+                        }}
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={saveSchedule}
+                        className="px-4 py-2 rounded font-medium"
+                        style={{ 
+                          background: `linear-gradient(135deg, ${colors.success}, ${colors.dark})`,
+                          color: colors.text
+                        }}
+                      >
+                        Simpan Jadwal
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setEditingSchedule(true)}
+                      className="px-4 py-2 rounded font-medium"
+                      style={{ 
+                        background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                        color: colors.text
+                      }}
+                    >
+                      Edit Jadwal
+                    </button>
+                  )}
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.entries(scheduleData).map(([day, subjects]) => (
+                {Object.entries(schedule).map(([day, subjects]) => (
                   <div key={day} className="rounded-xl overflow-hidden" style={{ background: colors.dark }}>
                     <div className="p-4" style={{ background: colors.medium }}>
                       <h3 className="font-bold text-center" style={{ color: colors.text }}>{day}</h3>
@@ -1067,8 +1249,39 @@ const Dashboard = () => {
                             border: `1px solid ${colors.medium}`
                           }}
                         >
-                          <p className="font-medium" style={{ color: colors.text }}>{item.subject}</p>
-                          <p className="text-sm" style={{ color: colors.light }}>{item.time}</p>
+                          {editingSchedule ? (
+                            <>
+                              <input
+                                type="text"
+                                value={item.time}
+                                onChange={(e) => handleScheduleEdit(day, index, 'time', e.target.value)}
+                                placeholder="Jam (contoh: 07:30 - 08:30)"
+                                className="w-full mb-2 px-2 py-1 rounded text-sm"
+                                style={{ 
+                                  background: colors.dark,
+                                  color: colors.text,
+                                  borderColor: colors.medium
+                                }}
+                              />
+                              <input
+                                type="text"
+                                value={item.subject}
+                                onChange={(e) => handleScheduleEdit(day, index, 'subject', e.target.value)}
+                                placeholder="Mata Pelajaran"
+                                className="w-full px-2 py-1 rounded text-sm"
+                                style={{ 
+                                  background: colors.dark,
+                                  color: colors.text,
+                                  borderColor: colors.medium
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-medium" style={{ color: colors.text }}>{item.subject || 'Belum diisi'}</p>
+                              <p className="text-sm" style={{ color: colors.light }}>{item.time || 'Belum diisi'}</p>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
