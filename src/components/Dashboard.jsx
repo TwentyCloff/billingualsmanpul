@@ -176,6 +176,7 @@ const Dashboard = () => {
   const [currentStudent, setCurrentStudent] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentWeek, setPaymentWeek] = useState('Minggu 1');
+  const [paymentYear, setPaymentYear] = useState(new Date().getFullYear());
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDescription, setExpenseDescription] = useState('');
   const [totalKas, setTotalKas] = useState(0);
@@ -186,7 +187,13 @@ const Dashboard = () => {
   const [searchPiketResult, setSearchPiketResult] = useState(null);
   const [showPiketSearchModal, setShowPiketSearchModal] = useState(false);
   const [schedule, setSchedule] = useState(scheduleData);
-  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [editingSchedule, setEditingSchedule] = useState(false);
+  const [addingSchedule, setAddingSchedule] = useState(false);
+  const [editingScheduleDay, setEditingScheduleDay] = useState('');
+  const [editingScheduleIndex, setEditingScheduleIndex] = useState(-1);
+  const [newScheduleSubject, setNewScheduleSubject] = useState('');
+  const [newScheduleTime, setNewScheduleTime] = useState('');
+  const [studentSuggestions, setStudentSuggestions] = useState([]);
 
   // Firebase collections
   const absensiRef = collection(db, 'absensi');
@@ -215,6 +222,18 @@ const Dashboard = () => {
     // Format with thousand separators
     setter(formatCurrency(num));
   };
+
+  // Handle student search input
+  useEffect(() => {
+    if (searchStudent.length > 0) {
+      const filtered = students.filter(student => 
+        student.name.toLowerCase().includes(searchStudent.toLowerCase())
+      );
+      setStudentSuggestions(filtered);
+    } else {
+      setStudentSuggestions([]);
+    }
+  }, [searchStudent]);
 
   // Auth state listener
   useEffect(() => {
@@ -258,7 +277,8 @@ const Dashboard = () => {
         uangKasData[student.name] = {
           status: 'Belum Bayar',
           amount: 0,
-          week: 'Minggu 1'
+          week: 'Minggu 1',
+          year: new Date().getFullYear()
         };
       });
       setUangKas(uangKasData);
@@ -399,10 +419,11 @@ const Dashboard = () => {
     historiUangKas.forEach(record => {
       if (summary[record.student] && record.status === 'Sudah Bayar') {
         summary[record.student].total += record.amount;
-        if (!summary[record.student].weeks[record.week]) {
-          summary[record.student].weeks[record.week] = 0;
+        const weekKey = `${record.week}_${record.year}`;
+        if (!summary[record.student].weeks[weekKey]) {
+          summary[record.student].weeks[weekKey] = 0;
         }
-        summary[record.student].weeks[record.week] += record.amount;
+        summary[record.student].weeks[weekKey] += record.amount;
       }
     });
 
@@ -492,7 +513,7 @@ const Dashboard = () => {
       await Promise.all(batch);
       setSuccessMessage('Jadwal berhasil disimpan!');
       setShowSuccessModal(true);
-      setEditingSchedule(null);
+      setEditingSchedule(false);
     } catch (error) {
       console.error("Error saving schedule:", error);
       setSuccessMessage('Gagal menyimpan jadwal');
@@ -500,11 +521,50 @@ const Dashboard = () => {
     }
   };
 
+  // Add new schedule item
+  const addScheduleItem = async (day) => {
+    const newSchedule = { ...schedule };
+    newSchedule[day].push({
+      subject: newScheduleSubject,
+      time: newScheduleTime
+    });
+    setSchedule(newSchedule);
+    setNewScheduleSubject('');
+    setNewScheduleTime('');
+    setAddingSchedule(false);
+    await saveSchedule();
+  };
+
+  // Edit schedule item
+  const editScheduleItem = async (day, index) => {
+    const newSchedule = { ...schedule };
+    newSchedule[day][index] = {
+      subject: newScheduleSubject,
+      time: newScheduleTime
+    };
+    setSchedule(newSchedule);
+    setNewScheduleSubject('');
+    setNewScheduleTime('');
+    setEditingSchedule(false);
+    setEditingScheduleDay('');
+    setEditingScheduleIndex(-1);
+    await saveSchedule();
+  };
+
+  // Delete schedule item
+  const deleteScheduleItem = async (day, index) => {
+    const newSchedule = { ...schedule };
+    newSchedule[day].splice(index, 1);
+    setSchedule(newSchedule);
+    await saveSchedule();
+  };
+
   // Open payment modal
   const openPaymentModal = (student, week) => {
     setCurrentStudent(student);
     setPaymentAmount('');
     setPaymentWeek(week);
+    setPaymentYear(new Date().getFullYear());
     setShowPaymentModal(true);
   };
 
@@ -531,6 +591,7 @@ const Dashboard = () => {
         status: 'Sudah Bayar',
         amount: amount,
         week: paymentWeek,
+        year: paymentYear,
         timestamp: serverTimestamp()
       });
       
@@ -538,7 +599,7 @@ const Dashboard = () => {
       await setDoc(doc(kasRef, docId), {
         type: 'pemasukan',
         amount: amount,
-        description: `Pembayaran kas dari ${currentStudent} (${paymentWeek})`,
+        description: `Pembayaran kas dari ${currentStudent} (${paymentWeek} ${paymentYear})`,
         timestamp: serverTimestamp()
       });
       
@@ -593,18 +654,27 @@ const Dashboard = () => {
   const searchPiket = (name) => {
     if (!name) return;
     
+    // Find the full name from suggestions if available
+    const fullName = studentSuggestions.find(s => 
+      s.name.toLowerCase().includes(name.toLowerCase())
+    )?.name || name;
+    
     const result = {};
     const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
     
     days.forEach(day => {
-      if (daftarPiket[day]?.includes(name)) {
+      if (daftarPiket[day]?.some(student => 
+        student.toLowerCase() === fullName.toLowerCase()
+      )) {
         result[day] = true;
       }
     });
     
     if (Object.keys(result).length > 0) {
-      setSearchPiketResult({ name, days: result });
+      setSearchPiketResult({ name: fullName, days: result });
       setShowPiketSearchModal(true);
+      setSearchStudent('');
+      setStudentSuggestions([]);
     } else {
       setSuccessMessage('Nama tidak ditemukan di daftar piket');
       setShowSuccessModal(true);
@@ -975,6 +1045,20 @@ const Dashboard = () => {
                   </h2>
                   <div className="flex items-center gap-2">
                     <select
+                      value={paymentYear}
+                      onChange={(e) => setPaymentYear(parseInt(e.target.value))}
+                      className="px-3 py-1 rounded text-sm"
+                      style={{ 
+                        background: colors.dark,
+                        color: colors.text,
+                        borderColor: colors.medium
+                      }}
+                    >
+                      {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                    <select
                       value={paymentWeek}
                       onChange={(e) => setPaymentWeek(e.target.value)}
                       className="px-3 py-1 rounded text-sm"
@@ -993,7 +1077,9 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {students.map((student, index) => {
                     const payment = historiUangKas.find(
-                      p => p.student === student.name && p.week === paymentWeek
+                      p => p.student === student.name && 
+                           p.week === paymentWeek && 
+                           p.year === paymentYear
                     );
                     
                     return (
@@ -1010,7 +1096,7 @@ const Dashboard = () => {
                             {student.number}. {student.name.split(' ')[0]}
                           </p>
                           <p className="text-xs" style={{ color: colors.text }}>
-                            {paymentWeek}
+                            {paymentWeek} {paymentYear}
                           </p>
                         </div>
                         {payment ? (
@@ -1050,6 +1136,7 @@ const Dashboard = () => {
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tanggal</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Minggu</th>
+                        <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Tahun</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nominal</th>
                       </tr>
                     </thead>
@@ -1061,6 +1148,7 @@ const Dashboard = () => {
                           </td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>{record.student}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>{record.week}</td>
+                          <td className="py-3 px-4" style={{ color: colors.text }}>{record.year}</td>
                           <td className="py-3 px-4" style={{ color: colors.text }}>
                             {formatCurrency(record.amount)}
                           </td>
@@ -1084,7 +1172,9 @@ const Dashboard = () => {
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Nama Siswa</th>
                         <th className="py-3 px-4 text-left" style={{ color: colors.text }}>Total Pembayaran</th>
                         {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.text }}>{week}</th>
+                          <th key={week} className="py-3 px-4 text-left" style={{ color: colors.text }}>
+                            {week} {paymentYear}
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -1096,17 +1186,20 @@ const Dashboard = () => {
                           <td className="py-3 px-4" style={{ color: colors.text }}>
                             {formatCurrency(rekapUangKas[student.name]?.total || 0)}
                           </td>
-                          {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => (
-                            <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
-                              {rekapUangKas[student.name]?.weeks[week] ? (
-                                <span style={{ color: colors.success }}>
-                                  {formatCurrency(rekapUangKas[student.name].weeks[week])}
-                                </span>
-                              ) : (
-                                <span style={{ color: colors.danger }}>Belum Bayar</span>
-                              )}
-                            </td>
-                          ))}
+                          {['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'].map(week => {
+                            const weekKey = `${week}_${paymentYear}`;
+                            return (
+                              <td key={week} className="py-3 px-4" style={{ color: colors.text }}>
+                                {rekapUangKas[student.name]?.weeks[weekKey] ? (
+                                  <span style={{ color: colors.success }}>
+                                    {formatCurrency(rekapUangKas[student.name].weeks[weekKey])}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: colors.danger }}>Belum Bayar</span>
+                                )}
+                              </td>
+                            );
+                          })}
                         </tr>
                       ))}
                     </tbody>
@@ -1121,19 +1214,44 @@ const Dashboard = () => {
             <>
               {/* Search Bar */}
               <div className="p-6 rounded-2xl" style={glassStyle}>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={searchStudent}
-                    onChange={(e) => setSearchStudent(e.target.value)}
-                    placeholder="Cari nama siswa..."
-                    className="flex-1 px-4 py-2 rounded"
-                    style={{ 
-                      background: colors.dark,
-                      color: colors.text,
-                      borderColor: colors.medium
-                    }}
-                  />
+                <div className="flex gap-2 relative">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={searchStudent}
+                      onChange={(e) => setSearchStudent(e.target.value)}
+                      placeholder="Cari nama siswa..."
+                      className="w-full px-4 py-2 rounded"
+                      style={{ 
+                        background: colors.dark,
+                        color: colors.text,
+                        borderColor: colors.medium
+                      }}
+                    />
+                    {studentSuggestions.length > 0 && (
+                      <div 
+                        className="absolute z-10 w-full mt-1 rounded-lg overflow-hidden"
+                        style={{ 
+                          background: colors.dark,
+                          border: `1px solid ${colors.medium}`
+                        }}
+                      >
+                        {studentSuggestions.map((student, index) => (
+                          <div 
+                            key={index}
+                            className="px-4 py-2 cursor-pointer hover:bg-gray-800"
+                            style={{ color: colors.text }}
+                            onClick={() => {
+                              setSearchStudent(student.name);
+                              setStudentSuggestions([]);
+                            }}
+                          >
+                            {student.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <button
                     onClick={() => searchPiket(searchStudent)}
                     className="px-4 py-2 rounded font-medium"
@@ -1143,16 +1261,6 @@ const Dashboard = () => {
                     }}
                   >
                     Cari
-                  </button>
-                  <button
-                    onClick={savePiket}
-                    className="px-4 py-2 rounded font-medium"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${colors.success}, ${colors.dark})`,
-                      color: colors.text
-                    }}
-                  >
-                    Simpan Piket
                   </button>
                 </div>
               </div>
@@ -1198,7 +1306,7 @@ const Dashboard = () => {
                   {editingSchedule ? (
                     <>
                       <button
-                        onClick={() => setEditingSchedule(null)}
+                        onClick={() => setEditingSchedule(false)}
                         className="px-4 py-2 rounded font-medium"
                         style={{ 
                           background: colors.danger,
@@ -1243,7 +1351,7 @@ const Dashboard = () => {
                       {subjects.map((item, index) => (
                         <div 
                           key={index} 
-                          className="mb-3 last:mb-0 p-3 rounded"
+                          className="mb-3 last:mb-0 p-3 rounded relative"
                           style={{ 
                             background: colors.background,
                             border: `1px solid ${colors.medium}`
@@ -1275,15 +1383,66 @@ const Dashboard = () => {
                                   borderColor: colors.medium
                                 }}
                               />
+                              <button
+                                onClick={() => deleteScheduleItem(day, index)}
+                                className="absolute top-1 right-1 p-1 rounded-full"
+                                style={{ 
+                                  background: colors.danger,
+                                  color: colors.text
+                                }}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
                             </>
                           ) : (
                             <>
                               <p className="font-medium" style={{ color: colors.text }}>{item.subject || 'Belum diisi'}</p>
                               <p className="text-sm" style={{ color: colors.light }}>{item.time || 'Belum diisi'}</p>
+                              {editingSchedule && (
+                                <button
+                                  onClick={() => {
+                                    setEditingScheduleDay(day);
+                                    setEditingScheduleIndex(index);
+                                    setNewScheduleSubject(item.subject);
+                                    setNewScheduleTime(item.time);
+                                  }}
+                                  className="absolute top-1 right-1 p-1 rounded-full"
+                                  style={{ 
+                                    background: colors.info,
+                                    color: colors.text
+                                  }}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
                       ))}
+                      {editingSchedule && (
+                        <button
+                          onClick={() => {
+                            setAddingSchedule(true);
+                            setEditingScheduleDay(day);
+                            setNewScheduleSubject('');
+                            setNewScheduleTime('');
+                          }}
+                          className="w-full p-2 rounded flex items-center justify-center gap-1"
+                          style={{ 
+                            background: colors.medium,
+                            color: colors.text
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Tambah Pelajaran
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1312,6 +1471,26 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>
                 Pembayaran Kas untuk {currentStudent}
               </h3>
+              
+              <div className="mb-4">
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
+                  Tahun
+                </label>
+                <select
+                  value={paymentYear}
+                  onChange={(e) => setPaymentYear(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 rounded"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                >
+                  {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
               
               <div className="mb-4">
                 <label className="block text-sm mb-2" style={{ color: colors.text }}>
@@ -1481,30 +1660,15 @@ const Dashboard = () => {
                 Hasil Pencarian Piket
               </h3>
               
-              <div className="mb-4 p-4 rounded-lg" style={{ 
+              <div className="mb-4 p-4 rounded-lg text-center" style={{ 
                 background: `linear-gradient(135deg, ${colors.gold}, ${colors.jade})`,
                 color: colors.text
               }}>
-                <p className="font-bold text-center">{searchPiketResult.name}</p>
-              </div>
-              
-              <div className="space-y-3">
-                {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].map(day => (
-                  <div 
-                    key={day} 
-                    className="p-3 rounded flex justify-between items-center"
-                    style={{ 
-                      background: colors.background,
-                      border: `1px solid ${searchPiketResult.days[day] ? colors.success : colors.danger}`
-                    }}
-                  >
-                    <span style={{ color: colors.text }}>{day}</span>
-                    {searchPiketResult.days[day] ? (
-                      <StatusBadge status="Piket" />
-                    ) : (
-                      <StatusBadge status="Tidak Piket" />
-                    )}
-                  </div>
+                <p className="font-bold">{searchPiketResult.name}</p>
+                {Object.keys(searchPiketResult.days).map(day => (
+                  <p key={day} className="mt-2">
+                    Kamu Piket Pada Hari {day}
+                  </p>
                 ))}
               </div>
               
@@ -1518,6 +1682,102 @@ const Dashboard = () => {
                   }}
                 >
                   Tutup
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Schedule Modal */}
+      <AnimatePresence>
+        {(addingSchedule || editingSchedule) && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="w-full max-w-md p-6 rounded-xl"
+              style={{ background: colors.dark }}
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+            >
+              <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>
+                {addingSchedule ? 'Tambah Jadwal' : 'Edit Jadwal'}
+              </h3>
+              
+              <div className="mb-4">
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
+                  Mata Pelajaran
+                </label>
+                <input
+                  type="text"
+                  value={newScheduleSubject}
+                  onChange={(e) => setNewScheduleSubject(e.target.value)}
+                  placeholder="Masukkan mata pelajaran"
+                  className="w-full px-3 py-2 rounded"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm mb-2" style={{ color: colors.text }}>
+                  Waktu
+                </label>
+                <input
+                  type="text"
+                  value={newScheduleTime}
+                  onChange={(e) => setNewScheduleTime(e.target.value)}
+                  placeholder="Contoh: 07:30 - 08:30"
+                  className="w-full px-3 py-2 rounded"
+                  style={{ 
+                    background: colors.background,
+                    color: colors.text,
+                    borderColor: colors.medium
+                  }}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setAddingSchedule(false);
+                    setEditingSchedule(false);
+                    setEditingScheduleDay('');
+                    setEditingScheduleIndex(-1);
+                    setNewScheduleSubject('');
+                    setNewScheduleTime('');
+                  }}
+                  className="px-4 py-2 rounded"
+                  style={{ 
+                    background: colors.danger,
+                    color: colors.text
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    if (addingSchedule) {
+                      addScheduleItem(editingScheduleDay);
+                    } else {
+                      editScheduleItem(editingScheduleDay, editingScheduleIndex);
+                    }
+                  }}
+                  className="px-4 py-2 rounded"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${colors.medium}, ${colors.dark})`,
+                    color: colors.text
+                  }}
+                >
+                  Simpan
                 </button>
               </div>
             </motion.div>
