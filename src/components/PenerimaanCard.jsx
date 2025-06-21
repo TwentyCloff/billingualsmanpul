@@ -2,79 +2,80 @@ import React from "react";
 
 const PenerimaanCard = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#001F3F] via-[#41729F] to-[#E1F1FF] text-white font-sans flex flex-col items-center p-6 relative overflow-hidden">
-      
-      {/* Glow Element */}
-      <div className="absolute -top-10 -left-10 w-[300px] h-[300px] bg-[#41729F] opacity-20 blur-3xl rounded-full z-0"></div>
-      <div className="absolute bottom-0 right-0 w-[200px] h-[200px] bg-[#E1F1FF] opacity-10 blur-2xl rounded-full z-0"></div>
-
-      {/* Header */}
-      <div className="relative z-10 text-center mt-16 mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-wide drop-shadow-md">
-          SISTEM PENERIMAAN MURID BARU 2025
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#001F3F] via-[#41729F] to-[#E1F1FF] text-white p-6 flex flex-col items-center font-sans">
+      {/* TITLE */}
+      <div className="text-center mt-10 mb-6">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-wide uppercase relative inline-block">
+          Sistem Penerimaan Murid Baru 2025
+          <span className="block w-full h-1 mt-2 bg-gradient-to-r from-cyan-400 to-blue-300 rounded-full shadow-lg" />
         </h1>
-        <p className="text-lg md:text-xl mt-2 text-[#E1F1FF]/80 font-medium">
-          SMA NEGERI 10 PONTIANAK
+        <p className="mt-2 text-lg sm:text-xl text-blue-100 font-medium">
+          SMA Negeri 10 Pontianak
         </p>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl px-4 relative z-10">
-        {/* Card Template */}
+      {/* GRID CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full px-4 mt-10">
+        {/* CARD TEMPLATE */}
         {[
           {
-            title: "JALUR AFIRMASI",
-            date: "16 - 17 JUNI 2025",
-            percent: "AFIRMASI 30%",
-            siswa: "107 SISWA",
-            footnote: "*Sudah termasuk penyandang disabilitas sebesar 2%",
-            color: "from-blue-800 to-blue-400",
-            icon: "🎯"
+            title: "Jalur Afirmasi",
+            date: "16 - 17 Juni 2025",
+            percent: "30%",
+            quota: "107 Siswa",
+            note: "*Sudah termasuk penyandang disabilitas sebesar 2%",
+            border: "from-blue-500 to-cyan-400",
           },
           {
-            title: "JALUR MUTASI",
-            date: "16 - 17 JUNI 2025",
-            percent: "MUTASI 5%",
-            siswa: "18 SISWA",
-            footnote: "*Anak guru 2 siswa\n18 - 2 = 16 SISWA",
-            color: "from-cyan-700 to-cyan-300",
-            icon: "🔁"
+            title: "Jalur Mutasi",
+            date: "16 - 17 Juni 2025",
+            percent: "5%",
+            quota: "18 Siswa",
+            note: "*Anak Guru 2 Siswa\n18 - 2 = 16 Siswa",
+            border: "from-green-400 to-teal-300",
           },
           {
-            title: "JALUR DOMISILI",
-            date: "24 - 26 JUNI 2025",
-            percent: "DOMISILI 35%",
-            siswa: "126 SISWA",
-            footnote: "",
-            color: "from-indigo-700 to-indigo-300",
-            icon: "📍"
+            title: "Jalur Domisili",
+            date: "24 - 26 Juni 2025",
+            percent: "35%",
+            quota: "126 Siswa",
+            note: "",
+            border: "from-purple-500 to-pink-400",
           },
           {
-            title: "JALUR PRESTASI",
-            date: "7 - 9 JULI 2025",
-            percent: "PRESTASI 30%",
-            siswa: "108 SISWA",
-            footnote: "",
-            color: "from-yellow-600 to-yellow-300 text-black",
-            icon: "🏅"
-          }
-        ].map((item, i) => (
-          <div key={i} className={`bg-gradient-to-br ${item.color} p-5 rounded-2xl shadow-xl backdrop-blur-md bg-opacity-30 relative overflow-hidden`}>
-            <div className="absolute top-2 right-3 text-2xl opacity-40">{item.icon}</div>
-            <h3 className="text-xl font-bold mb-1">{item.title}</h3>
-            <p className="text-sm opacity-80 mb-2">{item.date}</p>
-            <div className="text-lg font-semibold">{item.percent}</div>
-            <div className="text-lg font-semibold">{item.siswa}</div>
-            {item.footnote && (
-              <p className="text-xs mt-2 whitespace-pre-line opacity-70 italic">{item.footnote}</p>
-            )}
+            title: "Jalur Prestasi",
+            date: "7 - 9 Juli 2025",
+            percent: "30%",
+            quota: "108 Siswa",
+            note: "",
+            border: "from-yellow-400 to-orange-300",
+          },
+        ].map((item, idx) => (
+          <div
+            key={idx}
+            className={`bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl border-2 border-transparent hover:border-blue-200 hover:shadow-blue-300 transition-all duration-300`}
+          >
+            <div
+              className={`text-center p-1 mb-4 bg-gradient-to-r ${item.border} text-lg font-bold rounded-full shadow`}
+            >
+              {item.title}
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-sm font-medium text-blue-100">{item.date}</p>
+              <p className="text-xl font-bold text-white">{item.percent}</p>
+              <p className="text-base text-blue-200 font-semibold">{item.quota}</p>
+              {item.note && (
+                <p className="text-xs text-blue-100 mt-2 whitespace-pre-line italic">{item.note}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Footer */}
-      <div className="mt-16 text-sm opacity-60 z-10">
-        🌐 www.sman10-ptk.sch.id &nbsp; | &nbsp; 📸 @sman10ptk.official &nbsp; | &nbsp; 🏫 Smanpul Pontianak
+      {/* FOOTER */}
+      <div className="mt-16 text-sm text-blue-200 opacity-70 text-center">
+        www.sman10-ptk.sch.id <br />
+        @sman10ptk.official — Smanpul Pontianak
       </div>
     </div>
   );
