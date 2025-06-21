@@ -35,7 +35,7 @@ const PenerimaanPoster = () => {
       {/* Content Container */}
       <div className="relative z-10 h-full p-8 flex flex-col">
         {/* Header */}
-        <header className="text-center mt-8">
+        <header className="text-center mt-6">
           <div className="inline-block px-6 py-2 bg-white/5 backdrop-blur-md rounded-sm border border-cyan-400/30 mb-4">
             <p className="text-cyan-400 font-semibold text-sm tracking-[0.3em]">SMA NEGERI 10 PONTIANAK</p>
           </div>
@@ -46,8 +46,8 @@ const PenerimaanPoster = () => {
           <p className="text-[2.5rem] font-bold text-cyan-400 mt-2 tracking-tighter" style={{ textShadow: '0 0 10px rgba(76, 201, 240, 0.5)' }}>2025</p>
         </header>
 
-        {/* Slim Vertical Cards Layout */}
-        <div className="mt-8 space-y-4 px-2">
+        {/* Enhanced Vertical Cards with Larger Text */}
+        <div className="mt-8 space-y-5 px-2">
           {[
             {
               title: "JALUR AFIRMASI",
@@ -56,7 +56,7 @@ const PenerimaanPoster = () => {
               quota: "107 SISWA",
               note: "*Sudah termasuk penyandang disabilitas sebesar 2%",
               border: "border-cyan-400",
-              bg: "bg-gradient-to-br from-cyan-500/10 to-blue-600/10",
+              bg: "bg-gradient-to-br from-cyan-500/15 to-blue-600/15",
               accent: "bg-cyan-400",
             },
             {
@@ -66,7 +66,7 @@ const PenerimaanPoster = () => {
               quota: "18 SISWA",
               note: "*Anak Guru 2 Siswa\n18 - 2 = 16 Siswa",
               border: "border-emerald-400",
-              bg: "bg-gradient-to-br from-emerald-500/10 to-teal-600/10",
+              bg: "bg-gradient-to-br from-emerald-500/15 to-teal-600/15",
               accent: "bg-emerald-400",
             },
             {
@@ -76,7 +76,7 @@ const PenerimaanPoster = () => {
               quota: "126 SISWA",
               note: "",
               border: "border-purple-400",
-              bg: "bg-gradient-to-br from-purple-500/10 to-fuchsia-600/10",
+              bg: "bg-gradient-to-br from-purple-500/15 to-fuchsia-600/15",
               accent: "bg-purple-400",
             },
             {
@@ -86,32 +86,32 @@ const PenerimaanPoster = () => {
               quota: "108 SISWA",
               note: "",
               border: "border-amber-400",
-              bg: "bg-gradient-to-br from-amber-500/10 to-orange-600/10",
+              bg: "bg-gradient-to-br from-amber-500/15 to-orange-600/15",
               accent: "bg-amber-400",
             }
           ].map((item, idx) => (
             <div
               key={idx}
-              className={`${item.bg} ${item.border} border rounded-sm p-4 backdrop-blur-sm shadow-lg hover:shadow-cyan-400/20 transition-all duration-300 relative overflow-hidden`}
-              style={{ minHeight: '120px' }}
+              className={`${item.bg} ${item.border} border rounded-sm p-5 backdrop-blur-sm shadow-lg hover:shadow-cyan-400/20 transition-all duration-300 relative overflow-hidden`}
+              style={{ minHeight: '140px' }}
             >
               {/* Accent bar */}
-              <div className={`${item.accent} h-[2px] w-full absolute top-0 left-0`} />
+              <div className={`${item.accent} h-[3px] w-full absolute top-0 left-0`} />
               
-              {/* Content - Futuristic Layout */}
+              {/* Enhanced Content with Larger Text */}
               <div className="flex justify-between h-full">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold uppercase tracking-wider mb-1">{item.title}</h3>
-                  <p className="text-xs text-white/80 font-mono mb-2">{item.date}</p>
-                  <p className="text-sm font-mono text-white/90">{item.quota}</p>
+                  <h3 className="text-[1.4rem] font-bold uppercase tracking-wider mb-1">{item.title}</h3>
+                  <p className="text-[0.95rem] text-white/80 font-mono mb-2">{item.date}</p>
+                  <p className="text-[1.1rem] font-mono text-white/90 font-semibold">{item.quota}</p>
                 </div>
                 <div className="flex items-center">
-                  <p className="text-xl font-bold tracking-tighter">{item.percent}</p>
+                  <p className="text-[1.4rem] font-bold tracking-tighter">{item.percent}</p>
                 </div>
               </div>
               
               {item.note && (
-                <p className="text-[10px] text-white/70 mt-1 italic whitespace-pre-line leading-tight font-mono">
+                <p className="text-[0.9rem] text-white/80 mt-2 italic whitespace-pre-line leading-snug">
                   {item.note}
                 </p>
               )}
