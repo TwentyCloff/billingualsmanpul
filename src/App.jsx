@@ -19,6 +19,7 @@ import Clubs from "./components/Clubs";
 import SignUp from "./components/SignUp";
 import ClassInformation from "./components/ClassInformation";
 import GallerySlider from "./components/GallerySlider";
+import PenerimaanCard from "./components/PenerimaanCard";
 
 
 const Home = () => (
@@ -46,6 +47,7 @@ const App = () => {
       <Route path="/signin" element={<Auth />} />
       <Route path="/tutorial" element={<Tutorial />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/design" element={<PenerimaanCard />} />
 
       {/* Login admin */}
       <Route path="/admin/login" element={<LoginAdmin />} />
