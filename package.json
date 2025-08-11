@@ -10,7 +10,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "firebase": "^11.8.0",
+    "firebase": "^12.1.0",
     "framer-motion": "^12.10.5",
     "gsap": "^3.13.0",
     "lucide-react": "^0.511.0",
